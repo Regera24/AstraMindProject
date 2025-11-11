@@ -5,9 +5,11 @@ import {
   FolderKanban,
   BarChart3,
   Bell,
-  Settings
+  Settings,
+  Shield
 } from 'lucide-react';
 import { cn } from '../utils/cn.js';
+import { useAuth } from '../contexts/AuthContext.jsx';
 
 const navigation = [
   {
@@ -39,6 +41,8 @@ const navigation = [
 
 export function Sidebar() {
   const location = useLocation();
+  const { userRole } = useAuth();
+  const isAdmin = userRole === 'ADMIN';
 
   return (
     <div className="hidden lg:fixed lg:inset-y-0 lg:z-30 lg:flex lg:w-64 lg:flex-col lg:pt-16">
@@ -71,6 +75,36 @@ export function Sidebar() {
                 </li>
               );
             })}
+            
+            {/* Admin Section - Only visible to admins */}
+            {isAdmin && (
+              <>
+                <li className="my-4">
+                  <div className="border-t border-gray-200 dark:border-gray-700" />
+                </li>
+                <li>
+                  <Link
+                    to="/admin"
+                    className={cn(
+                      'group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-medium transition-all duration-200',
+                      location.pathname === '/admin'
+                        ? 'bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 shadow-sm'
+                        : 'text-gray-700 dark:text-gray-300 hover:text-purple-700 dark:hover:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/10'
+                    )}
+                  >
+                    <Shield
+                      className={cn(
+                        'h-5 w-5 shrink-0',
+                        location.pathname === '/admin'
+                          ? 'text-purple-700 dark:text-purple-300'
+                          : 'text-gray-400 dark:text-gray-500 group-hover:text-purple-700 dark:group-hover:text-purple-300'
+                      )}
+                    />
+                    Admin Dashboard
+                  </Link>
+                </li>
+              </>
+            )}
             
             {/* Separator */}
             <li className="my-4">
