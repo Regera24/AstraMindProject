@@ -6,6 +6,8 @@ import { Button } from '../components/ui/Button.jsx';
 import { Input } from '../components/ui/Input.jsx';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/Card.jsx';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner.jsx';
+import { FormError } from '../components/ui/FormError.jsx';
+import { validateLogin } from '../utils/validation.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import toast from 'react-hot-toast';
 
@@ -15,6 +17,7 @@ export function Login() {
     username: '',
     password: '',
   });
+  const [validationErrors, setValidationErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   
   const navigate = useNavigate();
@@ -22,6 +25,16 @@ export function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validate form data
+    const validation = validateLogin(formData);
+    if (!validation.isValid) {
+      setValidationErrors(validation.errors);
+      toast.error('Please fix the validation errors');
+      return;
+    }
+    
+    setValidationErrors({});
     setIsLoading(true);
 
     try {
@@ -63,9 +76,10 @@ export function Login() {
                   placeholder="Enter your username"
                   value={formData.username}
                   onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                  required
                   disabled={isLoading}
+                  className={validationErrors.username ? 'border-red-500' : ''}
                 />
+                <FormError error={validationErrors.username} />
               </div>
               <div>
                 <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -78,9 +92,8 @@ export function Login() {
                     placeholder="Enter your password"
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    required
                     disabled={isLoading}
-                    className="pr-10"
+                    className={`pr-10 ${validationErrors.password ? 'border-red-500' : ''}`}
                   />
                   <button
                     type="button"
@@ -94,6 +107,7 @@ export function Login() {
                     )}
                   </button>
                 </div>
+                <FormError error={validationErrors.password} />
               </div>
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? (

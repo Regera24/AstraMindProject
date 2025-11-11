@@ -6,6 +6,8 @@ import { Button } from '../components/ui/Button.jsx';
 import { Input } from '../components/ui/Input.jsx';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/Card.jsx';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner.jsx';
+import { FormError } from '../components/ui/FormError.jsx';
+import { validateRegistration } from '../utils/validation.js';
 import { register } from '../services/authService.js';
 import toast from 'react-hot-toast';
 
@@ -21,12 +23,23 @@ export function Register() {
     gender: true,
     birthDate: '',
   });
+  const [validationErrors, setValidationErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validate form data
+    const validation = validateRegistration(formData);
+    if (!validation.isValid) {
+      setValidationErrors(validation.errors);
+      toast.error('Please fix the validation errors');
+      return;
+    }
+    
+    setValidationErrors({});
     setIsLoading(true);
 
     try {
@@ -69,9 +82,10 @@ export function Register() {
                     placeholder="Enter username"
                     value={formData.username}
                     onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                    required
                     disabled={isLoading}
+                    className={validationErrors.username ? 'border-red-500' : ''}
                   />
+                  <FormError error={validationErrors.username} />
                 </div>
                 <div>
                   <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -83,9 +97,10 @@ export function Register() {
                     placeholder="Enter full name"
                     value={formData.fullName}
                     onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                    required
                     disabled={isLoading}
+                    className={validationErrors.fullName ? 'border-red-500' : ''}
                   />
+                  <FormError error={validationErrors.fullName} />
                 </div>
               </div>
 
@@ -96,13 +111,14 @@ export function Register() {
                   </label>
                   <Input
                     id="email"
-                    type="email"
+                    type="text"
                     placeholder="Enter email"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    required
                     disabled={isLoading}
+                    className={validationErrors.email ? 'border-red-500' : ''}
                   />
+                  <FormError error={validationErrors.email} />
                 </div>
                 <div>
                   <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -110,13 +126,14 @@ export function Register() {
                   </label>
                   <Input
                     id="phoneNumber"
-                    type="tel"
+                    type="text"
                     placeholder="Enter phone number"
                     value={formData.phoneNumber}
                     onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
-                    required
                     disabled={isLoading}
+                    className={validationErrors.phoneNumber ? 'border-red-500' : ''}
                   />
+                  <FormError error={validationErrors.phoneNumber} />
                 </div>
               </div>
 
@@ -131,9 +148,8 @@ export function Register() {
                     placeholder="Enter password"
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    required
                     disabled={isLoading}
-                    className="pr-10"
+                    className={`pr-10 ${validationErrors.password ? 'border-red-500' : ''}`}
                   />
                   <button
                     type="button"
@@ -147,6 +163,7 @@ export function Register() {
                     )}
                   </button>
                 </div>
+                <FormError error={validationErrors.password} />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

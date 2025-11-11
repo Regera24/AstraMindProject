@@ -14,13 +14,15 @@ import { createTaskFromNaturalLanguage, createTasksFromImage } from '../services
 import { TASK_STATUS, TASK_STATUS_LABELS, TASK_STATUS_COLORS, TASK_PRIORITY, TASK_PRIORITY_LABELS, TASK_PRIORITY_COLORS } from '../utils/constants.js';
 import { formatDateTime, isOverdue } from '../utils/dateUtils.js';
 import { getErrorMessage } from '../utils/errorHandler.js';
+import { validateTask } from '../utils/validation.js';
+import { FormError } from '../components/ui/FormError.jsx';
 import { OverdueBadge } from '../components/OverdueBadge.jsx';
 import { FloatingAIButton } from '../components/FloatingAIButton.jsx';
 import { AIScheduleSuggestionModal } from '../components/AIScheduleSuggestionModal.jsx';
 import toast from 'react-hot-toast';
 
 // TaskForm component - moved outside to prevent re-creation and input focus loss
-const TaskForm = ({ formData, setFormData, onSubmit, submitLabel, isSaving, categories, onCancel }) => (
+const TaskForm = ({ formData, setFormData, onSubmit, submitLabel, isSaving, categories, onCancel, errors = {} }) => (
   <form onSubmit={onSubmit} className="space-y-4">
     <div>
       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -30,9 +32,10 @@ const TaskForm = ({ formData, setFormData, onSubmit, submitLabel, isSaving, cate
         value={formData.title}
         onChange={(e) => setFormData({ ...formData, title: e.target.value })}
         placeholder="Enter task title"
-        required
         disabled={isSaving}
+        className={errors.title ? 'border-red-500' : ''}
       />
+      <FormError error={errors.title} />
     </div>
 
     <div>
@@ -43,9 +46,12 @@ const TaskForm = ({ formData, setFormData, onSubmit, submitLabel, isSaving, cate
         value={formData.description}
         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
         placeholder="Enter task description"
-        className="flex min-h-[80px] w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 disabled:cursor-not-allowed disabled:opacity-50"
+        className={`flex min-h-[80px] w-full rounded-lg border bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 disabled:cursor-not-allowed disabled:opacity-50 ${
+          errors.description ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+        }`}
         disabled={isSaving}
       />
+      <FormError error={errors.description} />
     </div>
 
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -97,7 +103,6 @@ const TaskForm = ({ formData, setFormData, onSubmit, submitLabel, isSaving, cate
           value={formData.status}
           onChange={(e) => setFormData({ ...formData, status: e.target.value })}
           className="flex h-10 w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
-          required
           disabled={isSaving}
         >
           {Object.entries(TASK_STATUS_LABELS).map(([value, label]) => (
@@ -154,7 +159,6 @@ export function Tasks() {
   const [sortDir, setSortDir] = useState('desc');
   const [viewMode, setViewMode] = useState('list'); // 'list' or 'calendar'
   
-  // Calendar view specific state
   const [calendarTasks, setCalendarTasks] = useState([]);
   const [calendarLoading, setCalendarLoading] = useState(false);
   const [calendarViewType, setCalendarViewType] = useState('week');
@@ -166,12 +170,15 @@ export function Tasks() {
   const [isAIModalOpen, setIsAIModalOpen] = useState(false);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [isAISuggestionsModalOpen, setIsAISuggestionsModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [taskToDelete, setTaskToDelete] = useState(null);
   const [editingTask, setEditingTask] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const [aiPrompt, setAiPrompt] = useState('');
   const [selectedImage, setSelectedImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [imageContext, setImageContext] = useState('');
+  const [validationErrors, setValidationErrors] = useState({});
   
   const [formData, setFormData] = useState({
     title: '',
@@ -272,6 +279,16 @@ export function Tasks() {
 
   const handleCreateTask = async (e) => {
     e.preventDefault();
+    
+    // Validate form data
+    const validation = validateTask(formData);
+    if (!validation.isValid) {
+      setValidationErrors(validation.errors);
+      toast.error('Please fix the validation errors');
+      return;
+    }
+    
+    setValidationErrors({});
     setIsSaving(true);
     
     try {
@@ -311,6 +328,16 @@ export function Tasks() {
 
   const handleUpdateTask = async (e) => {
     e.preventDefault();
+    
+    // Validate form data
+    const validation = validateTask(formData);
+    if (!validation.isValid) {
+      setValidationErrors(validation.errors);
+      toast.error('Please fix the validation errors');
+      return;
+    }
+    
+    setValidationErrors({});
     setIsSaving(true);
     
     try {
@@ -335,12 +362,19 @@ export function Tasks() {
     }
   };
 
-  const handleDeleteTask = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this task?')) return;
+  const handleDeleteTask = (task) => {
+    setTaskToDelete(task);
+    setIsDeleteModalOpen(true);
+  };
+
+  const confirmDeleteTask = async () => {
+    if (!taskToDelete) return;
     
     try {
-      await deleteTask(id);
+      await deleteTask(taskToDelete.id);
       toast.success('Task deleted successfully');
+      setIsDeleteModalOpen(false);
+      setTaskToDelete(null);
       fetchTasks();
     } catch (error) {
       const errorMessage = getErrorMessage(error, 'Failed to delete task');
@@ -471,6 +505,7 @@ export function Tasks() {
       status: 'TODO',
       categoryId: '',
     });
+    setValidationErrors({});
   };
 
   const handleCloseModal = () => {
@@ -677,7 +712,7 @@ export function Tasks() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => handleDeleteTask(task.id)}
+                        onClick={() => handleDeleteTask(task)}
                         title="Delete"
                       >
                         <Trash2 className="h-4 w-4 text-red-600" />
@@ -736,6 +771,7 @@ export function Tasks() {
           isSaving={isSaving}
           categories={categories}
           onCancel={handleCloseModal}
+          errors={validationErrors}
         />
       </Modal>
 
@@ -759,6 +795,7 @@ export function Tasks() {
           isSaving={isSaving}
           categories={categories}
           onCancel={handleCloseModal}
+          errors={validationErrors}
         />
       </Modal>
 
@@ -803,7 +840,6 @@ export function Tasks() {
               onChange={(e) => setAiPrompt(e.target.value)}
               placeholder="e.g., Schedule a high priority meeting with the marketing team tomorrow at 3pm to discuss Q4 campaign"
               className="flex min-h-[120px] w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 disabled:cursor-not-allowed disabled:opacity-50"
-              required
               disabled={isSaving}
             />
           </div>
@@ -964,6 +1000,40 @@ export function Tasks() {
         isOpen={isAISuggestionsModalOpen}
         onClose={() => setIsAISuggestionsModalOpen(false)}
       />
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={isDeleteModalOpen}
+        onClose={() => {
+          setIsDeleteModalOpen(false);
+          setTaskToDelete(null);
+        }}
+        title="Delete Task"
+      >
+        <div className="space-y-4">
+          <p className="text-gray-600 dark:text-gray-400">
+            Are you sure you want to delete <strong>{taskToDelete?.title}</strong>?
+            This action cannot be undone.
+          </p>
+          <div className="flex justify-end gap-3">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsDeleteModalOpen(false);
+                setTaskToDelete(null);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="danger"
+              onClick={confirmDeleteTask}
+            >
+              Delete Task
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
 
     {/* Floating AI Button - Only show in list view */}

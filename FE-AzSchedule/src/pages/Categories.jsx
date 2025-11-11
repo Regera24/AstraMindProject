@@ -8,10 +8,12 @@ import { Modal } from '../components/ui/Modal.jsx';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner.jsx';
 import { getCategories, createCategory, updateCategory, deleteCategory, searchCategories } from '../services/categoryService.js';
 import { CATEGORY_COLORS } from '../utils/constants.js';
+import { validateCategory } from '../utils/validation.js';
+import { FormError } from '../components/ui/FormError.jsx';
 import toast from 'react-hot-toast';
 
 // CategoryForm component - moved outside to prevent re-creation and input focus loss
-const CategoryForm = ({ formData, setFormData, onSubmit, submitLabel, isSaving, onCancel }) => (
+const CategoryForm = ({ formData, setFormData, onSubmit, submitLabel, isSaving, onCancel, errors = {} }) => (
   <form onSubmit={onSubmit} className="space-y-4">
     <div>
       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -21,9 +23,10 @@ const CategoryForm = ({ formData, setFormData, onSubmit, submitLabel, isSaving, 
         value={formData.name}
         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
         placeholder="Enter category name"
-        required
         disabled={isSaving}
+        className={errors.name ? 'border-red-500' : ''}
       />
+      <FormError error={errors.name} />
     </div>
 
     <div>
@@ -34,9 +37,12 @@ const CategoryForm = ({ formData, setFormData, onSubmit, submitLabel, isSaving, 
         value={formData.description}
         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
         placeholder="Enter category description"
-        className="flex min-h-[80px] w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
+        className={`flex min-h-[80px] w-full rounded-lg border bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 ${
+          errors.description ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+        }`}
         disabled={isSaving}
       />
+      <FormError error={errors.description} />
     </div>
 
     <div>
@@ -84,8 +90,11 @@ export function Categories() {
   const [totalPages, setTotalPages] = useState(0);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [categoryToDelete, setCategoryToDelete] = useState(null);
   const [editingCategory, setEditingCategory] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [validationErrors, setValidationErrors] = useState({});
   
   const [formData, setFormData] = useState({
     name: '',
@@ -117,6 +126,16 @@ export function Categories() {
 
   const handleCreateCategory = async (e) => {
     e.preventDefault();
+    
+    // Validate form data
+    const validation = validateCategory(formData);
+    if (!validation.isValid) {
+      setValidationErrors(validation.errors);
+      toast.error('Please fix the validation errors');
+      return;
+    }
+    
+    setValidationErrors({});
     setIsSaving(true);
     
     try {
@@ -135,6 +154,16 @@ export function Categories() {
 
   const handleUpdateCategory = async (e) => {
     e.preventDefault();
+    
+    // Validate form data
+    const validation = validateCategory(formData);
+    if (!validation.isValid) {
+      setValidationErrors(validation.errors);
+      toast.error('Please fix the validation errors');
+      return;
+    }
+    
+    setValidationErrors({});
     setIsSaving(true);
     
     try {
@@ -152,12 +181,19 @@ export function Categories() {
     }
   };
 
-  const handleDeleteCategory = async (id) => {
-    if (!confirm('Are you sure you want to delete this category?')) return;
+  const handleDeleteCategory = (category) => {
+    setCategoryToDelete(category);
+    setIsDeleteModalOpen(true);
+  };
+
+  const confirmDeleteCategory = async () => {
+    if (!categoryToDelete) return;
     
     try {
-      await deleteCategory(id);
+      await deleteCategory(categoryToDelete.id);
       toast.success('Category deleted successfully!');
+      setIsDeleteModalOpen(false);
+      setCategoryToDelete(null);
       fetchCategories();
     } catch (error) {
       const errorMessage = error.response?.data?.message || 'Failed to delete category';
@@ -171,6 +207,7 @@ export function Categories() {
       description: '',
       color: CATEGORY_COLORS[0],
     });
+    setValidationErrors({});
   };
 
   const handleCloseModal = () => {
@@ -267,7 +304,7 @@ export function Categories() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => handleDeleteCategory(category.id)}
+                        onClick={() => handleDeleteCategory(category)}
                       >
                         <Trash2 className="h-4 w-4 text-red-600" />
                       </Button>
@@ -319,6 +356,7 @@ export function Categories() {
           submitLabel="Create Category"
           isSaving={isSaving}
           onCancel={handleCloseModal}
+          errors={validationErrors}
         />
       </Modal>
 
@@ -335,7 +373,42 @@ export function Categories() {
           submitLabel="Update Category"
           isSaving={isSaving}
           onCancel={handleCloseModal}
+          errors={validationErrors}
         />
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={isDeleteModalOpen}
+        onClose={() => {
+          setIsDeleteModalOpen(false);
+          setCategoryToDelete(null);
+        }}
+        title="Delete Category"
+      >
+        <div className="space-y-4">
+          <p className="text-gray-600 dark:text-gray-400">
+            Are you sure you want to delete <strong>{categoryToDelete?.name}</strong>?
+            This action cannot be undone.
+          </p>
+          <div className="flex justify-end gap-3">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsDeleteModalOpen(false);
+                setCategoryToDelete(null);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="danger"
+              onClick={confirmDeleteCategory}
+            >
+              Delete Category
+            </Button>
+          </div>
+        </div>
       </Modal>
     </div>
   );
