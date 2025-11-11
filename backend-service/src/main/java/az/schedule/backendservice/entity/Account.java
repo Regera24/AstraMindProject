@@ -24,6 +24,7 @@ public class Account extends BaseEntity{
     @Column(unique = true, nullable = false)
     String email;
 
+    @Column(nullable = false)
     String password;
 
     Boolean isActive;

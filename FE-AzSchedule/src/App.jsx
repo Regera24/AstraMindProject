@@ -19,6 +19,7 @@ const Categories = lazy(() => import('./pages/Categories.jsx').then(module => ({
 const Analytics = lazy(() => import('./pages/Analytics.jsx'));
 const Notifications = lazy(() => import('./pages/Notifications.jsx').then(module => ({ default: module.Notifications })));
 const Settings = lazy(() => import('./pages/Settings.jsx').then(module => ({ default: module.Settings })));
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard.jsx').then(module => ({ default: module.AdminDashboard })));
 
 // Public Route Component (redirect to dashboard if logged in)
 function PublicRoute({ children }) {
@@ -61,6 +62,20 @@ function AppContent() {
               <Register />
             </Suspense>
           </PublicRoute>
+        }
+      />
+
+      {/* Admin routes */}
+      <Route
+        path="/admin"
+        element={
+          <AdminProtectedRoute>
+            <Layout>
+              <Suspense fallback={<LoadingSpinner size="lg" />}>
+                <AdminDashboard />
+              </Suspense>
+            </Layout>
+          </AdminProtectedRoute>
         }
       />
 

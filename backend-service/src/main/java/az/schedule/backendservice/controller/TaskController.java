@@ -14,6 +14,8 @@ import az.schedule.backendservice.dto.response.TaskStatisticsResponse;
 import az.schedule.backendservice.dto.response.ScheduleSuggestionResponse;
 import az.schedule.backendservice.enums.Priority;
 import az.schedule.backendservice.enums.TaskStatus;
+import az.schedule.backendservice.repository.AccountRepository;
+import az.schedule.backendservice.repository.RoleRepository;
 import az.schedule.backendservice.service.AIScheduleService;
 import az.schedule.backendservice.service.AITaskService;
 import az.schedule.backendservice.service.TaskService;
@@ -29,6 +31,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -43,12 +46,16 @@ public class TaskController {
     private final TaskService taskService;
     private final AITaskService aiTaskService;
     private final AIScheduleService aiScheduleService;
+    private final RoleRepository roleRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final AccountRepository accountRepository;
 
     @Operation(summary = "Create a new task", description = "Create a new task for the current user")
     @PostMapping
     public ApiResponse<TaskDTO> createTask(@Valid @RequestBody TaskRequest request) {
         Long accountId = SecurityUtils.getCurrentAccountId();
         TaskDTO task = taskService.createTask(request, accountId);
+
         return ApiResponse.<TaskDTO>builder()
                 .code(HttpStatus.CREATED.value())
                 .message("Create task successfully")
