@@ -1,13 +1,17 @@
 package az.schedule.backendservice.service.impl;
 
+import az.schedule.backendservice.client.GoogleUserInfoClient;
+import az.schedule.backendservice.client.OutboundGoogleClient;
 import az.schedule.backendservice.converter.AccountConverter;
 import az.schedule.backendservice.dto.request.authentication.*;
 import az.schedule.backendservice.dto.response.authentication.*;
 import az.schedule.backendservice.entity.Account;
+import az.schedule.backendservice.entity.Role;
 import az.schedule.backendservice.enums.TokenType;
 import az.schedule.backendservice.exception.AppException;
 import az.schedule.backendservice.exception.ErrorCode;
 import az.schedule.backendservice.repository.AccountRepository;
+import az.schedule.backendservice.repository.RoleRepository;
 import az.schedule.backendservice.service.AuthenticationService;
 import az.schedule.backendservice.service.RedisRefreshTokenService;
 import az.schedule.backendservice.utils.JwtService;
@@ -20,6 +24,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -28,6 +33,7 @@ import org.springframework.util.StringUtils;
 import java.security.SecureRandom;
 import java.text.ParseException;
 import java.time.Instant;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -35,6 +41,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class AuthenticationServiceImpl implements AuthenticationService {
     private final AccountRepository accountRepository;
+    private final RoleRepository roleRepository;
     private final JwtService jwtService;
     private final MailService mailService;
     private final ModelMapper modelMapper;
@@ -42,6 +49,17 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final AccountConverter accountConverter;
     private final ThreadPoolTaskScheduler taskScheduler;
     private final PasswordEncoder passwordEncoder;
+    private final OutboundGoogleClient outboundGoogleClient;
+    private final GoogleUserInfoClient googleUserInfoClient;
+
+    @Value("${google.client-id}")
+    private String googleClientId;
+
+    @Value("${google.client-secret}")
+    private String googleClientSecret;
+
+    @Value("${google.redirect-uri}")
+    private String googleRedirectUri;
 
     @Override
     public AuthenticationResponse authenticate(AuthenticationRequest authenticationRequest, HttpServletResponse response) {
@@ -219,7 +237,70 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public AuthenticationResponse outboundAuthenticate(String code) {
-        return null;
+        try {
+            // Build form parameters for Google OAuth2 token exchange
+            Map<String, String> formParams = new java.util.HashMap<>();
+            formParams.put("code", code);
+            formParams.put("client_id", googleClientId);
+            formParams.put("client_secret", googleClientSecret);
+            formParams.put("redirect_uri", googleRedirectUri);
+            formParams.put("grant_type", "authorization_code");
+            
+            OutboundAuthenticationResponse tokenResponse = outboundGoogleClient.exchangeToken(formParams);
+
+            UserInfoResponse userInfo = googleUserInfoClient.getUserInfo("json", tokenResponse.getAccessToken());
+            
+            log.info("Google OAuth2 login attempt for email: {}", userInfo.getEmail());
+
+            Account account = accountRepository.findByEmail(userInfo.getEmail())
+                    .orElseGet(() -> {
+                        log.info("Creating new account for Google user: {}", userInfo.getEmail());
+                        
+                        Account newAccount = new Account();
+                        newAccount.setEmail(userInfo.getEmail());
+                        newAccount.setFullName(userInfo.getName());
+                        newAccount.setUsername(generateUsernameFromEmail(userInfo.getEmail()));
+                        newAccount.setPassword(passwordEncoder.encode(java.util.UUID.randomUUID().toString())); // Random password
+                        newAccount.setIsActive(true);
+                        newAccount.setAvatarUrl(userInfo.getPicture());
+                        
+                        Role userRole = roleRepository.findByCode("USER")
+                                .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
+                        newAccount.setRole(userRole);
+                        
+                        return accountRepository.save(newAccount);
+                    });
+
+            if (Boolean.FALSE.equals(account.getIsActive())) {
+                throw new AppException(ErrorCode.ACCOUNT_DISABLED);
+            }
+
+            // Generate JWT token
+            String token = jwtService.generateToken(account, TokenType.ACCESS_TOKEN);
+            
+            return AuthenticationResponse.builder()
+                    .token(token)
+                    .success(true)
+                    .build();
+                    
+        } catch (Exception e) {
+            log.error("OAuth2 authentication failed", e);
+            throw new AppException(ErrorCode.OAUTH2_AUTHENTICATION_FAILED);
+        }
+    }
+
+    private String generateUsernameFromEmail(String email) {
+        String baseUsername = email.split("@")[0].toLowerCase();
+        String username = baseUsername;
+        int counter = 1;
+        
+        // Ensure username is unique
+        while (accountRepository.existsByUsername(username)) {
+            username = baseUsername + counter;
+            counter++;
+        }
+        
+        return username;
     }
 
     private String generate6DigitCode() {

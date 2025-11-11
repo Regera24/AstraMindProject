@@ -15,6 +15,7 @@ const Landing = lazy(() => import('./pages/Landing.jsx').then(module => ({ defau
 const Dashboard = lazy(() => import('./pages/Dashboard.jsx').then(module => ({ default: module.Dashboard })));
 const Login = lazy(() => import('./pages/Login.jsx').then(module => ({ default: module.Login })));
 const Register = lazy(() => import('./pages/Register.jsx').then(module => ({ default: module.Register })));
+const OAuthCallback = lazy(() => import('./pages/OAuthCallback.jsx').then(module => ({ default: module.OAuthCallback })));
 const Tasks = lazy(() => import('./pages/Tasks.jsx').then(module => ({ default: module.Tasks })));
 const Categories = lazy(() => import('./pages/Categories.jsx').then(module => ({ default: module.Categories })));
 const Analytics = lazy(() => import('./pages/Analytics.jsx'));
@@ -73,6 +74,15 @@ function AppContent() {
               <Register />
             </Suspense>
           </PublicRoute>
+        }
+      />
+      {/* OAuth Callback Route */}
+      <Route
+        path="/oauth/callback"
+        element={
+          <Suspense fallback={<LoadingSpinner size="lg" />}>
+            <OAuthCallback />
+          </Suspense>
         }
       />
 

@@ -15,6 +15,7 @@ axiosInstance.interceptors.request.use(
     const excludedEndpoints = [
       '/auth/login',
       '/auth/register',
+      '/auth/outbound/authentication',
       '/public',
       'auth/refresh-token',
       'auth/logout'

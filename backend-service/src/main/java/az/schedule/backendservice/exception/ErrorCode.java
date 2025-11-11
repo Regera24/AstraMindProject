@@ -37,6 +37,8 @@ public enum ErrorCode {
     IMAGE_TOO_LARGE(400, "Image file is too large. Maximum size is 10MB", HttpStatus.BAD_REQUEST),
     IMAGE_NOT_SCHEDULE_RELATED(400, "Image is not related to scheduling or tasks. Please upload a calendar, schedule, or task-related image", HttpStatus.BAD_REQUEST),
     IMAGE_PROCESSING_ERROR(500, "Failed to process image", HttpStatus.INTERNAL_SERVER_ERROR),
+    OAUTH2_AUTHENTICATION_FAILED(401, "OAuth2 authentication failed", HttpStatus.UNAUTHORIZED),
+    ACCOUNT_DISABLED(403, "Account is disabled", HttpStatus.FORBIDDEN),
     ;
     private final int code;
     private final String message;

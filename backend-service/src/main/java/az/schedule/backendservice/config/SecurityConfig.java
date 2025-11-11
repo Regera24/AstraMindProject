@@ -22,6 +22,7 @@ public class SecurityConfig {
     private static final String[] PUBLIC_APIS = {
             "/api/v1/public/**", "/api/v1/auth/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/ws/**"
     };
+    // Note: /api/v1/auth/outbound/authentication is already covered by /api/v1/auth/**
     
     private static final String[] ADMIN_APIS = {
             "/api/v1/admin/**",
