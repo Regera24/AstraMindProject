@@ -11,6 +11,7 @@ import { ProtectedRoute } from './components/ProtectedRoute.jsx';
 import { AdminProtectedRoute } from './components/AdminProtectedRoute.jsx';
 
 // Lazy load pages
+const Landing = lazy(() => import('./pages/Landing.jsx').then(module => ({ default: module.Landing })));
 const Dashboard = lazy(() => import('./pages/Dashboard.jsx').then(module => ({ default: module.Dashboard })));
 const Login = lazy(() => import('./pages/Login.jsx').then(module => ({ default: module.Login })));
 const Register = lazy(() => import('./pages/Register.jsx').then(module => ({ default: module.Register })));
@@ -43,7 +44,17 @@ function PublicRoute({ children }) {
 function AppContent() {
   return (
     <Routes>
-      {/* Public routes */}
+      {/* Landing Page - Public */}
+      <Route
+        path="/"
+        element={
+          <Suspense fallback={<LoadingSpinner size="lg" />}>
+            <Landing />
+          </Suspense>
+        }
+      />
+
+      {/* Auth routes */}
       <Route
         path="/login"
         element={
@@ -99,7 +110,6 @@ function AppContent() {
                   <Route path="/analytics" element={<Analytics />} />
                   <Route path="/notifications" element={<Notifications />} />
                   <Route path="/settings" element={<Settings />} />
-                  <Route path="/" element={<Navigate to="/dashboard" replace />} />
                   <Route path="*" element={<Navigate to="/dashboard" replace />} />
                 </Routes>
               </Suspense>

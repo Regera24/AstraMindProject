@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { TrendingUp, Calendar, Clock, Target, AlertCircle, Award, BarChart3, Brain, Lightbulb, CheckCircle2 } from 'lucide-react';
+import { TrendingUp, Calendar, Clock, Target, AlertCircle, Award, BarChart3, Brain, Lightbulb, CheckCircle2, Sparkles } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card.jsx';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner.jsx';
 import { getTaskAnalytics, getAIInsights } from '../services/analyticsService.js';
@@ -57,6 +57,7 @@ const HeatmapCell = ({ hour, day, intensity, count }) => {
 const Analytics = () => {
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [aiInsights, setAiInsights] = useState(null);
   const [aiInsightsLoading, setAiInsightsLoading] = useState(false);
 
   useEffect(() => {
@@ -66,27 +67,28 @@ const Analytics = () => {
   const fetchAnalytics = async () => {
     try {
       setLoading(true);
-      // Load main analytics first (fast - stats, charts, heatmap)
+      // Load main analytics only (fast - stats, charts, heatmap)
       const response = await getTaskAnalytics();
       setAnalytics(response.data);
       setLoading(false);
-      
-      // Load AI insights separately (slower - doesn't block main content)
-      setAiInsightsLoading(true);
-      try {
-        const insightsResponse = await getAIInsights();
-        setAnalytics(prev => ({ ...prev, aiInsights: insightsResponse.data }));
-      } catch (insightsError) {
-        console.error('Failed to load AI insights:', insightsError);
-        // Don't show error toast for AI insights - just fail silently
-        // User can still see all the other analytics
-      } finally {
-        setAiInsightsLoading(false);
-      }
     } catch (error) {
       const errorMessage = getErrorMessage(error, 'Failed to load analytics');
       toast.error(errorMessage);
       setLoading(false);
+    }
+  };
+
+  const handleGenerateAIInsights = async () => {
+    setAiInsightsLoading(true);
+    try {
+      const insightsResponse = await getAIInsights();
+      setAiInsights(insightsResponse.data);
+      toast.success('AI insights generated successfully!');
+    } catch (error) {
+      const errorMessage = getErrorMessage(error, 'Failed to generate AI insights');
+      toast.error(errorMessage);
+    } finally {
+      setAiInsightsLoading(false);
     }
   };
 
@@ -107,7 +109,7 @@ const Analytics = () => {
     );
   }
 
-  const { statistics, statusDistribution, priorityDistribution, categoryDistribution, heatmapData, productivityTrends, aiInsights } = analytics;
+  const { statistics, statusDistribution, priorityDistribution, categoryDistribution, heatmapData, productivityTrends } = analytics;
 
   const getProductivityScoreColor = (score) => {
     switch (score) {
@@ -138,7 +140,7 @@ const Analytics = () => {
       </div>
 
       {/* AI Insights Section */}
-      {!aiInsights ? (
+      {aiInsightsLoading ? (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -164,6 +166,39 @@ const Analytics = () => {
                   <LoadingSpinner size="sm" />
                   <span className="ml-2 text-sm text-purple-600 dark:text-purple-400">Analyzing your productivity patterns...</span>
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      ) : !aiInsights ? (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          <Card className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 border-purple-200 dark:border-purple-800">
+            <CardHeader>
+              <div className="flex items-center space-x-2">
+                <Brain className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                <CardTitle>AI-Powered Insights</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-8">
+                <Sparkles className="h-12 w-12 text-purple-500 dark:text-purple-400 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                  Get AI-Powered Productivity Insights
+                </h3>
+                <p className="text-gray-600 dark:text-gray-400 mb-6">
+                  Let AI analyze your task patterns and provide personalized recommendations to boost your productivity.
+                </p>
+                <button
+                  onClick={handleGenerateAIInsights}
+                  className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-medium rounded-lg transition-all transform hover:scale-105 shadow-lg"
+                >
+                  <Sparkles className="h-5 w-5 mr-2" />
+                  Generate AI Insights
+                </button>
               </div>
             </CardContent>
           </Card>
