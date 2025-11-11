@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AstraMind</title>
+  
+  <!-- Google Fonts - Inter như FE-AzSchedule -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <!-- Login Screen -->
+  <div id="login-screen" class="screen">
+    <div class="header-login">
+      <div class="logo">
+        <i class="fas fa-brain"></i>
+        <h1>AstraMind</h1>
+      </div>
+      <p class="tagline">Focus & Productivity Assistant</p>
+    </div>
+    
+    <form id="login-form" class="login-form">
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input type="text" id="username" placeholder="Enter username" required>
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" placeholder="Enter password" required>
+      </div>
+      <button type="submit" class="btn btn-primary" id="login-btn">
+        <span class="btn-text">
+          <i class="fas fa-sign-in-alt"></i>
+          Login
+        </span>
+        <span class="spinner hidden">
+          <i class="fas fa-spinner fa-spin"></i>
+        </span>
+      </button>
+      <div id="login-error" class="error-message hidden"></div>
+    </form>
+  </div>
+
+  <!-- Main Screen -->
+  <div id="main-screen" class="screen hidden">
+    <!-- Header -->
+    <div class="header">
+      <div class="user-info">
+        <div class="avatar" id="user-avatar">
+          <i class="fas fa-user"></i>
+        </div>
+        <span class="user-name" id="user-name">Guest</span>
+        <div class="streak-badge" id="streak-badge" title="Current streak">
+          <i class="fas fa-fire"></i>
+          <span id="streak-count">0</span>
+        </div>
+        <button class="btn-icon" id="logout-btn" title="Logout">
+          <i class="fas fa-sign-out-alt"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab active" data-tab="tasks">
+        <i class="fas fa-tasks"></i>
+        <span>Tasks</span>
+      </button>
+      <button class="tab" data-tab="focus">
+        <i class="fas fa-shield-alt"></i>
+        <span>Focus</span>
+      </button>
+      <button class="tab" data-tab="pomodoro">
+        <i class="fas fa-clock"></i>
+        <span>Pomodoro</span>
+      </button>
+    </div>
+
+    <!-- Tasks Tab -->
+    <div id="tasks-tab" class="tab-content active">
+      <div class="section-header">
+        <h2>My Tasks</h2>
+        <button class="btn-icon" id="refresh-tasks-btn" title="Refresh">
+          <i class="fas fa-sync-alt"></i>
+        </button>
+      </div>
+      <div id="tasks-list" class="tasks-list">
+        <div class="loading">Loading tasks...</div>
+      </div>
+    </div>
+
+    <!-- Focus Mode Tab -->
+    <div id="focus-tab" class="tab-content hidden">
+      <div class="section-header">
+        <h2><i class="fas fa-shield-alt"></i> Focus Mode</h2>
+        <label class="switch">
+          <input type="checkbox" id="focus-toggle">
+          <span class="slider"></span>
+        </label>
+      </div>
+      
+      <div class="focus-content">
+        <!-- Status Card -->
+        <div class="focus-status-card" id="focus-status-card">
+          <div class="status-icon">
+            <i class="fas fa-shield-alt"></i>
+          </div>
+          <div class="status-info">
+            <h3 class="status-title" id="focus-status-title">Focus Mode Inactive</h3>
+            <p class="status-description" id="focus-status-description">Enable to block distracting websites</p>
+          </div>
+        </div>
+        
+        <!-- Blocked Websites Section -->
+        <div class="focus-section">
+          <div class="section-title">
+            <i class="fas fa-ban"></i>
+            <span>Blocked Websites</span>
+          </div>
+          
+          <div class="input-group-focus">
+            <div class="input-wrapper">
+              <i class="fas fa-globe input-icon"></i>
+              <input type="text" id="website-input" placeholder="e.g., youtube.com, facebook.com">
+            </div>
+            <button type="button" class="btn-add" id="add-website-btn">
+              <i class="fas fa-plus"></i>
+              Add
+            </button>
+          </div>
+          
+          <div id="blocked-websites-list" class="tags-list-enhanced"></div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="focus-actions">
+          <button id="save-focus-settings-btn" class="btn btn-primary btn-large">
+            <i class="fas fa-save"></i>
+            Save Settings
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pomodoro Tab -->
+    <div id="pomodoro-tab" class="tab-content hidden">
+      <div class="section-header">
+        <h2><i class="fas fa-stopwatch"></i> Pomodoro</h2>
+      </div>
+      
+      <div class="pomodoro-content">
+        <!-- Timer Display -->
+        <div class="timer-display">
+          <div class="timer-circle">
+            <svg class="timer-svg" viewBox="0 0 200 200">
+              <defs>
+                <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+                  <stop offset="100%" style="stop-color:#2563eb;stop-opacity:1" />
+                </linearGradient>
+              </defs>
+              <circle class="timer-bg" cx="100" cy="100" r="90"></circle>
+              <circle class="timer-progress" cx="100" cy="100" r="90" id="timer-progress-circle"></circle>
+            </svg>
+            <div class="timer-text">
+              <div id="timer-time" class="timer-time">25:00</div>
+              <div id="timer-label" class="timer-label">Ready to Focus</div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Session Counter -->
+        <div class="pomodoro-stats">
+          <div class="stat-card">
+            <i class="fas fa-check-circle stat-icon"></i>
+            <div class="stat-content">
+              <span class="stat-value" id="session-count">0</span>
+              <span class="stat-label">Sessions Today</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Timer Controls -->
+        <div class="timer-controls">
+          <button class="btn btn-primary btn-large" id="timer-start-btn">
+            <i class="fas fa-play"></i>
+            Start Focus
+          </button>
+          <button class="btn btn-secondary btn-large hidden" id="timer-pause-btn">
+            <i class="fas fa-pause"></i>
+            Pause
+          </button>
+          <button class="btn btn-outline" id="timer-reset-btn">
+            <i class="fas fa-redo-alt"></i>
+            Reset
+          </button>
+        </div>
+        
+        <!-- Settings -->
+        <details class="pomodoro-settings">
+          <summary><i class="fas fa-cog"></i> Timer Settings</summary>
+          <div class="settings-grid">
+            <div class="form-group">
+              <label><i class="fas fa-briefcase"></i> Work</label>
+              <input type="number" id="work-minutes" value="25" min="1" max="60">
+              <span class="input-suffix">min</span>
+            </div>
+            <div class="form-group">
+              <label><i class="fas fa-coffee"></i> Break</label>
+              <input type="number" id="break-minutes" value="5" min="1" max="30">
+              <span class="input-suffix">min</span>
+            </div>
+            <div class="form-group">
+              <label><i class="fas fa-couch"></i> Long Break</label>
+              <input type="number" id="long-break-minutes" value="15" min="1" max="60">
+              <span class="input-suffix">min</span>
+            </div>
+            <div class="form-group">
+              <label><i class="fas fa-repeat"></i> Sessions</label>
+              <input type="number" id="sessions-count" value="4" min="1" max="10">
+              <span class="input-suffix">cycles</span>
+            </div>
+          </div>
+        </details>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="popup.js"></script>
+</body>
+</html>

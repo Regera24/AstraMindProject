@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Site Blocked - AstraMind</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #ffffff;
+      overflow: hidden;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .block-animation {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 1;
+      overflow: hidden;
+    }
+
+    .circle {
+      position: absolute;
+      border: 2px solid #000000;
+      border-radius: 50%;
+      opacity: 0.03;
+      animation: expand 8s ease-in-out infinite;
+    }
+
+    .circle-1 {
+      width: 300px;
+      height: 300px;
+      top: 20%;
+      left: 10%;
+      animation-delay: 0s;
+    }
+
+    .circle-2 {
+      width: 500px;
+      height: 500px;
+      top: 40%;
+      right: 5%;
+      animation-delay: 2s;
+    }
+
+    .circle-3 {
+      width: 400px;
+      height: 400px;
+      bottom: 10%;
+      left: 50%;
+      animation-delay: 4s;
+    }
+
+    @keyframes expand {
+      0%, 100% {
+        transform: scale(1) translate(0, 0);
+        opacity: 0.03;
+      }
+      50% {
+        transform: scale(1.2) translate(20px, -20px);
+        opacity: 0.06;
+      }
+    }
+
+    .block-content {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      animation: fadeSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes fadeSlideUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .block-icon {
+      font-size: 96px;
+      margin-bottom: 32px;
+      animation: floatBounce 3s ease-in-out infinite;
+      display: inline-block;
+    }
+
+    @keyframes floatBounce {
+      0%, 100% {
+        transform: translateY(0px) rotate(0deg);
+      }
+      25% {
+        transform: translateY(-10px) rotate(-5deg);
+      }
+      75% {
+        transform: translateY(-5px) rotate(5deg);
+      }
+    }
+
+    .block-title {
+      font-size: 64px;
+      font-weight: 800;
+      color: #000000;
+      margin-bottom: 16px;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      animation: slideIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateX(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .block-message {
+      font-size: 20px;
+      color: #666666;
+      margin-bottom: 48px;
+      font-weight: 400;
+      letter-spacing: -0.01em;
+      animation: slideIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
+    }
+
+    .block-stats {
+      margin-bottom: 48px;
+      animation: slideIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both;
+    }
+
+    .stat-item {
+      display: inline-block;
+      padding: 24px 48px;
+      border: 2px solid #000000;
+      border-radius: 16px;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .stat-item:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+    }
+
+    .stat-label {
+      display: block;
+      font-size: 14px;
+      color: #666666;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
+    }
+
+    .stat-value {
+      display: block;
+      font-size: 16px;
+      font-weight: 600;
+      color: #000000;
+      word-break: break-all;
+    }
+
+    .block-btn {
+      padding: 18px 48px;
+      background: #000000;
+      color: #ffffff;
+      border: 2px solid #000000;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      letter-spacing: -0.01em;
+      animation: slideIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.4s both;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .block-btn:hover {
+      background: #ffffff;
+      color: #000000;
+      transform: translateY(-4px);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+    }
+
+    .block-btn:active {
+      transform: translateY(-2px);
+    }
+
+    .block-btn span {
+      display: inline-block;
+      transition: transform 0.3s ease;
+    }
+
+    .block-btn:hover span {
+      transform: translateX(-4px);
+    }
+  </style>
+</head>
+<body>
+  <div class="block-animation">
+    <div class="circle circle-1"></div>
+    <div class="circle circle-2"></div>
+    <div class="circle circle-3"></div>
+  </div>
+  
+  <div class="block-content">
+    <div class="block-icon">🛡️</div>
+    <h1 class="block-title">Stay Focused</h1>
+    <p class="block-message">This site is blocked while Focus Mode is active</p>
+    
+    <div class="block-stats">
+      <div class="stat-item">
+        <span class="stat-label">Blocked URL</span>
+        <span class="stat-value" id="blocked-url">-</span>
+      </div>
+    </div>
+    
+    <button class="block-btn" id="close-tab-btn">
+      <span>← Close Tab</span>
+    </button>
+  </div>
+
+  <script src="block.js"></script>
+</body>
+</html>
