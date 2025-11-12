@@ -1,14 +1,3 @@
-/**
- * Google OAuth2 Configuration
- * 
- * IMPORTANT: Make sure to:
- * 1. Create a Google Cloud Project
- * 2. Enable Google+ API
- * 3. Create OAuth 2.0 credentials
- * 4. Add authorized redirect URIs in Google Console
- * 5. Replace CLIENT_ID with your actual Google Client ID
- */
-
 export const OAuthConfig = {
   clientId: "389350168183-srr22faut5obt27qffosm14hk5npifc7.apps.googleusercontent.com", // Replace with your actual Client ID
   redirectUri: `${window.location.origin}/oauth/callback`,

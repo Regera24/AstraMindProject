@@ -22,7 +22,6 @@ public class SecurityConfig {
     private static final String[] PUBLIC_APIS = {
             "/api/v1/public/**", "/api/v1/auth/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/ws/**"
     };
-    // Note: /api/v1/auth/outbound/authentication is already covered by /api/v1/auth/**
     
     private static final String[] ADMIN_APIS = {
             "/api/v1/admin/**",
@@ -51,9 +50,11 @@ public class SecurityConfig {
         corsConfiguration.addAllowedOriginPattern("http://localhost:5173");
         corsConfiguration.addAllowedOriginPattern("http://localhost:3000");
         corsConfiguration.addAllowedOriginPattern("chrome-extension://*");
+        corsConfiguration.addAllowedOriginPattern("http://103.90.227.143");
         corsConfiguration.addAllowedMethod("*");
         corsConfiguration.addAllowedHeader("*");
         corsConfiguration.setAllowCredentials(true);
+        corsConfiguration.addExposedHeader("Authorization");
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", corsConfiguration);
@@ -87,8 +88,10 @@ public class SecurityConfig {
         config.addAllowedOriginPattern("http://localhost:5173");
         config.addAllowedOriginPattern("http://localhost:3000");
         config.addAllowedOriginPattern("chrome-extension://*");
+        config.addAllowedOriginPattern("http://103.90.227.143");
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
+        config.addExposedHeader("Authorization");
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
@@ -107,7 +110,7 @@ public class SecurityConfig {
     JwtAuthenticationConverter jwtAuthenticationConverter() {
         JwtGrantedAuthoritiesConverter converter = new JwtGrantedAuthoritiesConverter();
         converter.setAuthorityPrefix("ROLE_");
-        converter.setAuthoritiesClaimName("scope"); // Read from "scope" claim
+        converter.setAuthoritiesClaimName("scope");
         
         JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
         jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(converter);

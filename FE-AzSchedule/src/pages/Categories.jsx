@@ -121,13 +121,11 @@ export function Categories() {
 
   useEffect(() => {
     fetchCategories();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, searchTerm]);
 
   const handleCreateCategory = async (e) => {
     e.preventDefault();
     
-    // Validate form data
     const validation = validateCategory(formData);
     if (!validation.isValid) {
       setValidationErrors(validation.errors);

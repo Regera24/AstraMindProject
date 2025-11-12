@@ -5,18 +5,15 @@ import az.schedule.backendservice.entity.Task;
 import az.schedule.backendservice.enums.Priority;
 import az.schedule.backendservice.enums.TaskStatus;
 import az.schedule.backendservice.repository.TaskRepository;
-import az.schedule.backendservice.service.AITaskService;
 import az.schedule.backendservice.service.AnalyticsService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.stereotype.Service;
 
 import java.time.*;
-import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
 import java.util.*;
@@ -365,15 +362,14 @@ public class AnalyticsServiceImpl implements AnalyticsService {
             }
             
             String productivityScore = root.has("productivityScore") ? root.get("productivityScore").asText() : "Average";
-            double scorePercentage = completionRate;
-            
+
             return AIInsights.builder()
                     .summary(root.has("summary") ? root.get("summary").asText() : "Analysis complete.")
                     .strengths(strengths)
                     .weaknesses(weaknesses)
                     .suggestions(suggestions)
                     .productivityScore(productivityScore)
-                    .scorePercentage(scorePercentage)
+                    .scorePercentage(completionRate)
                     .build();
             
         } catch (Exception e) {

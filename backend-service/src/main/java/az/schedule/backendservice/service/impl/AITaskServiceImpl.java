@@ -147,7 +147,6 @@ public class AITaskServiceImpl implements AITaskService {
                     .suggestedCategory(getStringValue(jsonNode, "suggestedCategory"))
                     .build();
             
-            // Validate that at least title is present
             if (response.getTitle() == null || response.getTitle().trim().isEmpty()) {
                 throw new AppException(ErrorCode.INVALID_TASK_DATA);
             }
@@ -203,9 +202,7 @@ public class AITaskServiceImpl implements AITaskService {
             return TaskStatus.TODO;
         }
     }
-    
-    // ==================== IMAGE-BASED TASK CREATION ====================
-    
+
     private static final String IMAGE_VISION_PROMPT = """
             You are an intelligent task extraction system that analyzes images.
             

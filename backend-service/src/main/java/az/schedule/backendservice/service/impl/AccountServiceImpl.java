@@ -21,7 +21,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -58,10 +57,8 @@ public class AccountServiceImpl implements AccountService {
         Account account = accountRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_NOT_FOUND));
 
-        if (request.getEmail() != null && !account.getEmail().equals(request.getEmail())) {
-            if (accountRepository.existsByEmail(request.getEmail())) {
+        if (request.getEmail() != null && !account.getEmail().equals(request.getEmail()) && accountRepository.existsByEmail(request.getEmail())) {
                 throw new AppException(ErrorCode.EMAIL_EXISTED);
-            }
         }
 
         Role role = null;
@@ -100,7 +97,7 @@ public class AccountServiceImpl implements AccountService {
 
         List<AccountDTO> accountDTOs = accountPage.getContent().stream()
                 .map(accountConverter::toDTO)
-                .collect(Collectors.toList());
+                .toList();
 
         return PageResponse.<AccountDTO>builder()
                 .pageNo(accountPage.getNumber())
