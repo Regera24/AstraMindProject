@@ -10,6 +10,7 @@ import az.schedule.backendservice.entity.Subscription;
 import az.schedule.backendservice.exception.AppException;
 import az.schedule.backendservice.exception.ErrorCode;
 import az.schedule.backendservice.repository.AccountRepository;
+import az.schedule.backendservice.repository.AccountSearchRepository;
 import az.schedule.backendservice.repository.RoleRepository;
 import az.schedule.backendservice.repository.SubscriptionRepository;
 import az.schedule.backendservice.service.AccountService;
@@ -29,6 +30,7 @@ public class AccountServiceImpl implements AccountService {
     private final RoleRepository roleRepository;
     private final SubscriptionRepository subscriptionRepository;
     private final AccountConverter accountConverter;
+    private final AccountSearchRepository accountSearchRepository;
 
     @Override
     public AccountDTO getAccountById(Long id) {
@@ -114,5 +116,10 @@ public class AccountServiceImpl implements AccountService {
             throw new AppException(ErrorCode.UNAUTHORIZED);
         }
         return getAccountById(accountId);
+    }
+
+    @Override
+    public PageResponse<AccountDTO> getNewsArticlesByCriteria(int offset, int pageSize, String sort, String... searchs) {
+        return accountSearchRepository.getAllNewsWithSortAndSearchByCriteria(offset, pageSize, sort, searchs);
     }
 }

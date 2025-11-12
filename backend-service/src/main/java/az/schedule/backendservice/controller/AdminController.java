@@ -6,6 +6,7 @@ import az.schedule.backendservice.dto.request.admin.UpdateUserStatusRequest;
 import az.schedule.backendservice.dto.response.ApiResponse;
 import az.schedule.backendservice.dto.response.PageResponse;
 import az.schedule.backendservice.dto.response.admin.SystemStatisticsResponse;
+import az.schedule.backendservice.service.AccountService;
 import az.schedule.backendservice.service.AdminService;
 import az.schedule.backendservice.utils.SecurityUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -29,6 +30,7 @@ import org.springframework.web.bind.annotation.*;
 @PreAuthorize("hasRole('ADMIN')")
 public class AdminController {
     private final AdminService adminService;
+    private final AccountService accountService;
 
     @Operation(summary = "Get system statistics", description = "Retrieve system-wide statistics including users, tasks, and categories")
     @GetMapping("/statistics")
@@ -53,6 +55,22 @@ public class AdminController {
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
         
         PageResponse<AccountDTO> users = adminService.getAllUsers(pageable);
+        return ApiResponse.<PageResponse<AccountDTO>>builder()
+                .code(HttpStatus.OK.value())
+                .message("Users retrieved successfully")
+                .data(users)
+                .build();
+    }
+
+    @Operation(summary = "Get all users with filtered", description = "Retrieve all users with pagination")
+    @GetMapping("/users-filtered")
+    public ApiResponse<PageResponse<AccountDTO>> getAllUsersFilter(
+            @Parameter(description = "Page number (0-indexed)") @RequestParam(defaultValue = "1") int pageNo,
+            @Parameter(description = "Number of items per page") @RequestParam(defaultValue = "10") int pageSize,
+            @Parameter(description = "Field to sort by") @RequestParam(defaultValue = "createdDate") String sortBy,
+            @Parameter(description = "Search Criteria") @RequestParam(required = false) String... searchs) {
+
+        PageResponse<AccountDTO> users = accountService.getNewsArticlesByCriteria(pageNo, pageSize, sortBy, searchs);
         return ApiResponse.<PageResponse<AccountDTO>>builder()
                 .code(HttpStatus.OK.value())
                 .message("Users retrieved successfully")

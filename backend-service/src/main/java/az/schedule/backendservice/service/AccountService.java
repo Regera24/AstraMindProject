@@ -21,4 +21,6 @@ public interface AccountService {
     PageResponse<AccountDTO> searchAccounts(String keyword, Pageable pageable);
     
     AccountDTO getCurrentAccount();
+
+    PageResponse<AccountDTO> getNewsArticlesByCriteria(int offset, int pageSize, String sort, String... searchs);
 }

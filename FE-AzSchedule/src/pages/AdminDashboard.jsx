@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Users, Shield, Activity, Database, Search, Edit, Trash2, UserCheck, UserX, RefreshCw } from 'lucide-react';
+import { Users, Shield, Activity, Database, Search, Edit, Trash2, UserCheck, UserX, RefreshCw, Filter, X, Plus } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card.jsx';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner.jsx';
 import { Modal } from '../components/ui/Modal.jsx';
@@ -26,6 +26,9 @@ export function AdminDashboard() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
+  const [showAdvancedFilter, setShowAdvancedFilter] = useState(false);
+  const [filters, setFilters] = useState([]);
+  const [useAdvancedFilter, setUseAdvancedFilter] = useState(false);
 
   // Fetch system statistics
   const fetchStatistics = async () => {
@@ -39,15 +42,25 @@ export function AdminDashboard() {
   };
 
   // Fetch users
-  const fetchUsers = async (page = 0, keyword = '') => {
+  const fetchUsers = async (page = 0, keyword = '', useFilters = false) => {
     try {
       setLoading(true);
       let response;
-      if (keyword.trim()) {
+      
+      if (useFilters && filters.length > 0) {
+        // Use advanced filter API
+        const searchCriteria = filters.map(filter => {
+          const { field, value } = filter;
+          const operator = getOperatorForField(field);
+          return `${field}${operator}${value}`;
+        });
+        response = await adminService.getUsersWithFilter(page + 1, 10, 'createdAt:desc', searchCriteria);
+      } else if (keyword.trim()) {
         response = await adminService.searchUsers(keyword, page, 10);
       } else {
         response = await adminService.getAllUsers(page, 10);
       }
+      
       setUsers(response.data.data);
       setTotalPages(response.data.totalPages);
       setCurrentPage(page);
@@ -69,13 +82,62 @@ export function AdminDashboard() {
   const handleSearch = (e) => {
     e.preventDefault();
     setCurrentPage(0);
-    fetchUsers(0, searchKeyword);
+    setUseAdvancedFilter(false);
+    fetchUsers(0, searchKeyword, false);
+  };
+
+  // Handle advanced filter
+  const handleAdvancedFilter = () => {
+    setCurrentPage(0);
+    setUseAdvancedFilter(true);
+    setSearchKeyword('');
+    fetchUsers(0, '', true);
   };
 
   // Handle page change
   const handlePageChange = (newPage) => {
-    fetchUsers(newPage, searchKeyword);
+    fetchUsers(newPage, useAdvancedFilter ? '' : searchKeyword, useAdvancedFilter);
   };
+
+  // Get operator for field
+  const getOperatorForField = (field) => {
+    // All text fields use 'contains' operator, status uses exact match
+    return ':';
+  };
+
+  // Add filter
+  const addFilter = () => {
+    setFilters([...filters, { field: 'username', value: '' }]);
+  };
+
+  // Remove filter
+  const removeFilter = (index) => {
+    setFilters(filters.filter((_, i) => i !== index));
+  };
+
+  // Update filter
+  const updateFilter = (index, key, value) => {
+    const newFilters = [...filters];
+    newFilters[index][key] = value;
+    setFilters(newFilters);
+  };
+
+  // Clear all filters
+  const clearFilters = () => {
+    setFilters([]);
+    setUseAdvancedFilter(false);
+    setShowAdvancedFilter(false);
+    fetchUsers(0, searchKeyword, false);
+  };
+
+  // Available filter fields
+  const filterFields = [
+    { value: 'username', label: 'Username' },
+    { value: 'email', label: 'Email' },
+    { value: 'fullName', label: 'Full Name' },
+    { value: 'isActive', label: 'Status' },
+    { value: 'phoneNumber', label: 'Phone Number' }
+  ];
 
   // Handle user status toggle
   const handleToggleUserStatus = async (userId, currentStatus) => {
@@ -108,7 +170,7 @@ export function AdminDashboard() {
   // Handle refresh
   const handleRefresh = () => {
     fetchStatistics();
-    fetchUsers(currentPage, searchKeyword);
+    fetchUsers(currentPage, useAdvancedFilter ? '' : searchKeyword, useAdvancedFilter);
     toast.success('Data refreshed');
   };
 
@@ -253,22 +315,136 @@ export function AdminDashboard() {
             </div>
           </CardHeader>
           <CardContent>
-            {/* Search */}
-            <form onSubmit={handleSearch} className="mb-6">
-              <div className="flex gap-2">
+            {/* Search and Filter Controls */}
+            <div className="mb-6 space-y-4">
+              {/* Basic Search */}
+              <form onSubmit={handleSearch} className="flex gap-2">
                 <Input
                   type="text"
                   placeholder="Search users by name, email, or username..."
                   value={searchKeyword}
                   onChange={(e) => setSearchKeyword(e.target.value)}
                   className="flex-1"
+                  disabled={useAdvancedFilter}
                 />
-                <Button type="submit">
+                <Button type="submit" disabled={useAdvancedFilter}>
                   <Search className="h-4 w-4 mr-2" />
                   Search
                 </Button>
-              </div>
-            </form>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowAdvancedFilter(!showAdvancedFilter)}
+                >
+                  <Filter className="h-4 w-4 mr-2" />
+                  Advanced Filter
+                </Button>
+              </form>
+
+              {/* Advanced Filter Panel */}
+              {showAdvancedFilter && (
+                <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-800/50">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Advanced Filters</h3>
+                    <div className="flex gap-2">
+                      <Button size="sm" onClick={addFilter}>
+                        <Plus className="h-4 w-4 mr-1" />
+                        Add Filter
+                      </Button>
+                      {filters.length > 0 && (
+                        <Button size="sm" variant="outline" onClick={clearFilters}>
+                          Clear All
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Filter Rows */}
+                  {filters.length === 0 ? (
+                    <p className="text-gray-500 dark:text-gray-400 text-center py-4">
+                      No filters added. Click "Add Filter" to start filtering.
+                    </p>
+                  ) : (
+                    <div className="space-y-3">
+                      {filters.map((filter, index) => (
+                        <div key={index} className="flex items-center gap-3">
+                          <select
+                            value={filter.field}
+                            onChange={(e) => updateFilter(index, 'field', e.target.value)}
+                            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                          >
+                            {filterFields.map(field => (
+                              <option key={field.value} value={field.value}>
+                                {field.label}
+                              </option>
+                            ))}
+                          </select>
+                          
+                          {filter.field === 'isActive' ? (
+                            <select
+                              value={filter.value}
+                              onChange={(e) => updateFilter(index, 'value', e.target.value)}
+                              className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                            >
+                              <option value="">Select status...</option>
+                              <option value="true">Active</option>
+                              <option value="false">Inactive</option>
+                            </select>
+                          ) : (
+                            <Input
+                              type="text"
+                              placeholder="Enter value..."
+                              value={filter.value}
+                              onChange={(e) => updateFilter(index, 'value', e.target.value)}
+                              className="flex-1"
+                            />
+                          )}
+                          
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => removeFilter(index)}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Apply Filter Button */}
+                  {filters.length > 0 && (
+                    <div className="mt-4 flex justify-end">
+                      <Button onClick={handleAdvancedFilter}>
+                        <Filter className="h-4 w-4 mr-2" />
+                        Apply Filters
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Active Filters Display */}
+              {useAdvancedFilter && filters.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Active filters:</span>
+                  {filters.map((filter, index) => (
+                    <span
+                      key={index}
+                      className="inline-flex items-center gap-1 px-2 py-1 bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-200 rounded-full text-xs"
+                    >
+                      {filterFields.find(f => f.value === filter.field)?.label}: "{filter.value}"
+                      <button
+                        onClick={() => removeFilter(index)}
+                        className="ml-1 hover:bg-primary-200 dark:hover:bg-primary-800 rounded-full p-0.5"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
 
             {/* Users Table */}
             {loading ? (

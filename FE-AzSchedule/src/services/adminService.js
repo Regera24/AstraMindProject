@@ -71,6 +71,40 @@ export const updateUserStatus = async (userId, isActive) => {
 };
 
 /**
+ * Get users with multi-field filtering
+ * @param {number} pageNo - Page number (1-based)
+ * @param {number} pageSize - Page size
+ * @param {string} sortBy - Field to sort by with direction (e.g., "createdAt:desc")
+ * @param {Array<string>} searchCriteria - Array of search criteria (e.g., ["username:john", "isActive:true"])
+ * @returns {Promise} Filtered users data
+ */
+export const getUsersWithFilter = async (pageNo = 1, pageSize = 10, sortBy = 'createdAt:desc', searchCriteria = []) => {
+  const params = {
+    pageNo,
+    pageSize,
+    sortBy
+  };
+  
+  // Add search criteria as query parameters - Spring Boot expects them as 'searchs' array
+  if (searchCriteria.length > 0) {
+    searchCriteria.forEach((criteria) => {
+      if (!params.searchs) {
+        params.searchs = [];
+      }
+      params.searchs.push(criteria);
+    });
+  }
+  
+  const response = await axiosInstance.get('/admin/users-filtered', { 
+    params,
+    paramsSerializer: {
+      indexes: null // This ensures array parameters are sent as searchs=value1&searchs=value2
+    }
+  });
+  return response.data;
+};
+
+/**
  * Delete user
  * @param {number} userId - User ID
  * @returns {Promise} Deletion confirmation
