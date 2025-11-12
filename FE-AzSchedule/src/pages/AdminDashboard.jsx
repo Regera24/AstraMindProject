@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Users, Shield, Activity, Database, Search, Edit, Trash2, UserCheck, UserX, RefreshCw, Filter, X, Plus } from 'lucide-react';
+import { Users, Shield, Activity, Database, Search, Trash2, UserCheck, UserX, RefreshCw } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card.jsx';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner.jsx';
 import { Modal } from '../components/ui/Modal.jsx';
@@ -24,7 +25,7 @@ export function AdminDashboard() {
   const [totalPages, setTotalPages] = useState(0);
   const [selectedUser, setSelectedUser] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showBlockModal, setShowBlockModal] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
   const [showAdvancedFilter, setShowAdvancedFilter] = useState(false);
   const [filters, setFilters] = useState([]);
@@ -46,7 +47,7 @@ export function AdminDashboard() {
     try {
       setLoading(true);
       let response;
-      
+
       if (useFilters && filters.length > 0) {
         // Use advanced filter API
         const searchCriteria = filters.map(filter => {
@@ -60,7 +61,7 @@ export function AdminDashboard() {
       } else {
         response = await adminService.getAllUsers(page, 10);
       }
-      
+
       setUsers(response.data.data);
       setTotalPages(response.data.totalPages);
       setCurrentPage(page);
@@ -151,19 +152,20 @@ export function AdminDashboard() {
     }
   };
 
-  // Handle delete user
-  const handleDeleteUser = async () => {
+  // Handle user status toggle with confirmation
+  const handleToggleStatusWithConfirmation = async () => {
     if (!selectedUser) return;
+    const newStatus = !selectedUser.isActive;
     try {
-      await adminService.deleteUser(selectedUser.id);
-      toast.success('User deleted successfully');
-      setShowDeleteModal(false);
+      await adminService.updateUserStatus(selectedUser.id, newStatus);
+      toast.success(`User ${newStatus ? 'activated' : 'deactivated'} successfully`);
+      setShowBlockModal(false);
       setSelectedUser(null);
       fetchUsers(currentPage, searchKeyword);
       fetchStatistics();
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to delete user');
-      console.error('Error deleting user:', error);
+      toast.error('Failed to update user status');
+      console.error('Error updating user status:', error);
     }
   };
 
@@ -379,7 +381,7 @@ export function AdminDashboard() {
                               </option>
                             ))}
                           </select>
-                          
+
                           {filter.field === 'isActive' ? (
                             <select
                               value={filter.value}
@@ -399,7 +401,7 @@ export function AdminDashboard() {
                               className="flex-1"
                             />
                           )}
-                          
+
                           <Button
                             size="sm"
                             variant="outline"
@@ -501,17 +503,16 @@ export function AdminDashboard() {
                             </span>
                           </td>
                           <td className="py-3 px-4">
-                            <button
-                              onClick={() => handleToggleUserStatus(u.id, u.isActive)}
-                              className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium transition-colors ${
+                            <span
+                              className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${
                                 u.isActive
-                                  ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 hover:bg-green-200'
-                                  : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 hover:bg-red-200'
+                                  ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                  : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
                               }`}
                             >
                               {u.isActive ? <UserCheck className="h-3 w-3" /> : <UserX className="h-3 w-3" />}
                               {u.isActive ? 'Active' : 'Inactive'}
-                            </button>
+                            </span>
                           </td>
                           <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">
                             {u.createdAt ? new Date(u.createdAt).toLocaleDateString() : 'N/A'}
@@ -521,13 +522,17 @@ export function AdminDashboard() {
                               <button
                                 onClick={() => {
                                   setSelectedUser(u);
-                                  setShowDeleteModal(true);
+                                  setShowBlockModal(true);
                                 }}
                                 disabled={u.id === user?.id}
-                                className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                title="Delete user"
+                                className={`p-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                                  u.isActive
+                                    ? 'text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20'
+                                    : 'text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20'
+                                }`}
+                                title={u.isActive ? 'Block user' : 'Activate user'}
                               >
-                                <Trash2 className="h-4 w-4" />
+                                {u.isActive ? <UserX className="h-4 w-4" /> : <UserCheck className="h-4 w-4" />}
                               </button>
                             </div>
                           </td>
@@ -569,35 +574,36 @@ export function AdminDashboard() {
         </Card>
       )}
 
-      {/* Delete Confirmation Modal */}
+      {/* Status Change Confirmation Modal */}
       <Modal
-        isOpen={showDeleteModal}
+        isOpen={showBlockModal}
         onClose={() => {
-          setShowDeleteModal(false);
+          setShowBlockModal(false);
           setSelectedUser(null);
         }}
-        title="Delete User"
+        title={selectedUser?.isActive ? 'Block User' : 'Activate User'}
       >
         <div className="space-y-4">
           <p className="text-gray-600 dark:text-gray-400">
-            Are you sure you want to delete <strong>{selectedUser?.fullName || selectedUser?.username}</strong>?
-            This action cannot be undone.
+            {selectedUser?.isActive
+              ? `Are you sure you want to block ${selectedUser?.fullName || selectedUser?.username}? Their account will be deactivated.`
+              : `Are you sure you want to activate ${selectedUser?.fullName || selectedUser?.username}? They will be able to log in again.`}
           </p>
           <div className="flex justify-end gap-3">
             <Button
               variant="outline"
               onClick={() => {
-                setShowDeleteModal(false);
+                setShowBlockModal(false);
                 setSelectedUser(null);
               }}
             >
               Cancel
             </Button>
             <Button
-              variant="danger"
-              onClick={handleDeleteUser}
+              variant={selectedUser?.isActive ? 'danger' : 'success'}
+              onClick={handleToggleStatusWithConfirmation}
             >
-              Delete User
+              {selectedUser?.isActive ? 'Block User' : 'Activate User'}
             </Button>
           </div>
         </div>
