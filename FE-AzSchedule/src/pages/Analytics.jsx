@@ -36,19 +36,19 @@ const StatCard = ({ title, value, icon: Icon, subtitle, color = 'blue' }) => {
 
 const HeatmapCell = ({ hour, day, intensity, count }) => {
   const getColor = (intensity) => {
-    if (intensity === 0) return 'bg-gray-100 dark:bg-gray-800';
-    if (intensity < 0.2) return 'bg-blue-100 dark:bg-blue-900/30';
-    if (intensity < 0.4) return 'bg-blue-200 dark:bg-blue-800/50';
-    if (intensity < 0.6) return 'bg-blue-300 dark:bg-blue-700/70';
-    if (intensity < 0.8) return 'bg-blue-400 dark:bg-blue-600';
-    return 'bg-blue-500 dark:bg-blue-500';
+    if (intensity === 0) return 'bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700';
+    if (intensity < 0.2) return 'bg-emerald-100 dark:bg-emerald-900/40 border border-emerald-200 dark:border-emerald-700/50';
+    if (intensity < 0.4) return 'bg-emerald-200 dark:bg-emerald-800/60 border border-emerald-300 dark:border-emerald-600/60';
+    if (intensity < 0.6) return 'bg-emerald-300 dark:bg-emerald-700/80 border border-emerald-400 dark:border-emerald-500/70';
+    if (intensity < 0.8) return 'bg-emerald-400 dark:bg-emerald-600 border border-emerald-500 dark:border-emerald-400';
+    return 'bg-emerald-500 dark:bg-emerald-500 border border-emerald-600 dark:border-emerald-300';
   };
 
   const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
   return (
     <div 
-      className={`${getColor(intensity)} rounded transition-all hover:ring-2 hover:ring-blue-400 cursor-pointer`}
+      className={`w-full h-full ${getColor(intensity)} rounded-sm transition-all duration-200 hover:scale-110 hover:z-10 hover:shadow-lg cursor-pointer`}
       title={`${dayNames[day - 1]} ${hour}:00 - ${count} tasks`}
     />
   );
@@ -340,58 +340,72 @@ const Analytics = () => {
             Your task activity by day and hour
           </p>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
+        <CardContent className="p-6">
+          <div className="w-full max-w-none overflow-x-auto">
             {/* Hour labels */}
-            <div className="grid grid-cols-25 gap-1 mb-2">
-              <div className="text-xs text-gray-500"></div>
-              {[...Array(24)].map((_, hour) => (
-                <div key={hour} className="text-xs text-gray-500 text-center">
-                  {hour % 6 === 0 ? hour : ''}
+            <div className="flex justify-center mb-6">
+              <div className="flex items-center gap-1">
+                <div className="w-20 text-xs font-medium text-gray-600 dark:text-gray-400"></div>
+                {[...Array(24)].map((_, hour) => (
+                  <div key={hour} className="w-6 h-6 text-xs font-medium text-gray-600 dark:text-gray-400 text-center flex items-center justify-center">
+                    {hour % 4 === 0 ? hour : ''}
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            {/* Heatmap grid */}
+            <div className="flex flex-col items-center space-y-1">
+              {[1, 2, 3, 4, 5, 6, 7].map((day) => (
+                <div key={day} className="flex items-center gap-1">
+                  <div className="w-20 text-sm font-medium text-gray-700 dark:text-gray-300 text-right pr-2">
+                    {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][day - 1]}
+                  </div>
+                  <div className="flex gap-1">
+                    {[...Array(24)].map((_, hour) => {
+                      const cellData = heatmapData.find(d => d.dayOfWeek === day && d.hour === hour) || { intensity: 0, taskCount: 0 };
+                      return (
+                        <div key={`${day}-${hour}`} className="w-6 h-6">
+                          <HeatmapCell
+                            hour={hour}
+                            day={day}
+                            intensity={cellData.intensity}
+                            count={cellData.taskCount}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               ))}
             </div>
             
-            {/* Heatmap grid */}
-            {[1, 2, 3, 4, 5, 6, 7].map((day) => (
-              <div key={day} className="grid grid-cols-25 gap-1">
-                <div className="text-xs text-gray-500 flex items-center">
-                  {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][day - 1]}
-                </div>
-                {[...Array(24)].map((_, hour) => {
-                  const cellData = heatmapData.find(d => d.dayOfWeek === day && d.hour === hour) || { intensity: 0, taskCount: 0 };
-                  return (
-                    <HeatmapCell
-                      key={`${day}-${hour}`}
-                      hour={hour}
-                      day={day}
-                      intensity={cellData.intensity}
-                      count={cellData.taskCount}
-                    />
-                  );
-                })}
-              </div>
-            ))}
-            
             {/* Legend */}
-            <div className="flex items-center justify-end space-x-2 mt-4">
-              <span className="text-xs text-gray-500">Less</span>
-              <div className="flex space-x-1">
-                {[0, 0.2, 0.4, 0.6, 0.8, 1].map((intensity) => (
-                  <div
-                    key={intensity}
-                    className={`w-3 h-3 rounded ${
-                      intensity === 0 ? 'bg-gray-100 dark:bg-gray-800' :
-                      intensity < 0.2 ? 'bg-blue-100 dark:bg-blue-900/30' :
-                      intensity < 0.4 ? 'bg-blue-200 dark:bg-blue-800/50' :
-                      intensity < 0.6 ? 'bg-blue-300 dark:bg-blue-700/70' :
-                      intensity < 0.8 ? 'bg-blue-400 dark:bg-blue-600' :
-                      'bg-blue-500 dark:bg-blue-500'
-                    }`}
-                  />
-                ))}
+            <div className="flex items-center justify-center mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex items-center space-x-4">
+                <div className="text-sm text-gray-600 dark:text-gray-400">
+                  Activity Level:
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className="text-xs text-gray-500 dark:text-gray-400">Less</span>
+                  <div className="flex space-x-1">
+                    {[0, 0.2, 0.4, 0.6, 0.8, 1].map((intensity) => (
+                      <div
+                        key={intensity}
+                        className={`w-4 h-4 rounded-sm ${
+                          intensity === 0 ? 'bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700' :
+                          intensity < 0.2 ? 'bg-emerald-100 dark:bg-emerald-900/40 border border-emerald-200 dark:border-emerald-700/50' :
+                          intensity < 0.4 ? 'bg-emerald-200 dark:bg-emerald-800/60 border border-emerald-300 dark:border-emerald-600/60' :
+                          intensity < 0.6 ? 'bg-emerald-300 dark:bg-emerald-700/80 border border-emerald-400 dark:border-emerald-500/70' :
+                          intensity < 0.8 ? 'bg-emerald-400 dark:bg-emerald-600 border border-emerald-500 dark:border-emerald-400' :
+                          'bg-emerald-500 dark:bg-emerald-500 border border-emerald-600 dark:border-emerald-300'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">More</span>
+                </div>
               </div>
-              <span className="text-xs text-gray-500">More</span>
             </div>
           </div>
         </CardContent>
