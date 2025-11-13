@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Users, Shield, Activity, Database, Search, Edit, Trash2, UserCheck, UserX, RefreshCw, Filter, X, Plus } from 'lucide-react';
-import { Users, Shield, Activity, Database, Search, Trash2, UserCheck, UserX, RefreshCw } from 'lucide-react';
+import { Users, Shield, Activity, Database, Search, UserCheck, UserX, RefreshCw, Filter, X, Plus } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card.jsx';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner.jsx';
 import { Modal } from '../components/ui/Modal.jsx';
@@ -171,8 +170,13 @@ export function AdminDashboard() {
 
   // Handle refresh
   const handleRefresh = () => {
+    setSearchKeyword('');
+    setFilters([]);
+    setUseAdvancedFilter(false);
+    setShowAdvancedFilter(false);
+    setCurrentPage(0);
     fetchStatistics();
-    fetchUsers(currentPage, useAdvancedFilter ? '' : searchKeyword, useAdvancedFilter);
+    fetchUsers(0, '', false);
     toast.success('Data refreshed');
   };
 
