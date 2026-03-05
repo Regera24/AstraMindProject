@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner.jsx';
 import { Card, CardContent } from '../components/ui/Card.jsx';
@@ -10,6 +11,7 @@ import { getRoleFromToken } from '../utils/jwtUtils.js';
 import toast from 'react-hot-toast';
 
 export function OAuthCallback() {
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { setUser, setUserRole } = useAuth();
@@ -24,16 +26,16 @@ export function OAuthCallback() {
 
         if (error) {
           setStatus('error');
-          setErrorMessage('Google authentication was cancelled or failed');
-          toast.error('Authentication cancelled');
+          setErrorMessage(t('auth.authCancelled'));
+          toast.error(t('auth.authCancelled'));
           setTimeout(() => navigate('/login'), 3000);
           return;
         }
 
         if (!code) {
           setStatus('error');
-          setErrorMessage('No authorization code received');
-          toast.error('Invalid OAuth response');
+          setErrorMessage(t('auth.noAuthCode'));
+          toast.error(t('auth.invalidOAuthResponse'));
           setTimeout(() => navigate('/login'), 3000);
           return;
         }
@@ -46,7 +48,7 @@ export function OAuthCallback() {
         
         if (token) {
           setStatus('success');
-          toast.success('Login successful!');
+          toast.success(t('success.loginSuccess'));
 
           try {
             const userResponse = await getCurrentAccount();
@@ -95,10 +97,10 @@ export function OAuthCallback() {
                 <>
                   <LoadingSpinner size="lg" />
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                    Completing sign in...
+                    {t('auth.completingSignIn')}
                   </h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400 text-center">
-                    Please wait while we authenticate your account
+                    {t('auth.pleaseWaitAuth')}
                   </p>
                 </>
               )}
@@ -121,10 +123,10 @@ export function OAuthCallback() {
                     </svg>
                   </div>
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                    Authentication successful!
+                    {t('auth.authSuccessful')}
                   </h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400 text-center">
-                    Redirecting to dashboard...
+                    {t('auth.redirectingToDashboard')}
                   </p>
                 </>
               )}
@@ -147,13 +149,13 @@ export function OAuthCallback() {
                     </svg>
                   </div>
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                    Authentication failed
+                    {t('auth.authFailed')}
                   </h3>
                   <p className="text-sm text-red-600 dark:text-red-400 text-center">
                     {errorMessage}
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
-                    Redirecting to login page...
+                    {t('auth.redirectingToLogin')}
                   </p>
                 </>
               )}

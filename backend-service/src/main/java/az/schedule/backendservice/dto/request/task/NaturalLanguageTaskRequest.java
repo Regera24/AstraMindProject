@@ -11,6 +11,6 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class NaturalLanguageTaskRequest {
-    @NotBlank(message = "Prompt is required")
+    @NotBlank(message = "{validation.prompt.required}")
     String prompt;
 }

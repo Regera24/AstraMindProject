@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Users, Shield, Activity, Database, Search, UserCheck, UserX, RefreshCw, Filter, X, Plus } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card.jsx';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner.jsx';
@@ -15,6 +16,7 @@ import toast from 'react-hot-toast';
  * Displays system-wide statistics and admin functions
  */
 export function AdminDashboard() {
+  const { t } = useTranslation();
   const { user, userRole } = useAuth();
   const [loading, setLoading] = useState(true);
   const [statistics, setStatistics] = useState(null);
@@ -132,21 +134,21 @@ export function AdminDashboard() {
 
   // Available filter fields
   const filterFields = [
-    { value: 'username', label: 'Username' },
-    { value: 'email', label: 'Email' },
-    { value: 'fullName', label: 'Full Name' },
-    { value: 'isActive', label: 'Status' },
-    { value: 'phoneNumber', label: 'Phone Number' }
+    { value: 'username', label: t('admin.username') },
+    { value: 'email', label: t('admin.email') },
+    { value: 'fullName', label: t('admin.fullName') },
+    { value: 'isActive', label: t('admin.status') },
+    { value: 'phoneNumber', label: t('admin.phoneNumber') }
   ];
 
   // Handle user status toggle
   const handleToggleUserStatus = async (userId, currentStatus) => {
     try {
       await adminService.updateUserStatus(userId, !currentStatus);
-      toast.success(`User ${!currentStatus ? 'activated' : 'deactivated'} successfully`);
+      toast.success(t(!currentStatus ? 'admin.userActivated' : 'admin.userDeactivated'));
       fetchUsers(currentPage, searchKeyword);
     } catch (error) {
-      toast.error('Failed to update user status');
+      toast.error(t('error.somethingWentWrong'));
       console.error('Error updating user status:', error);
     }
   };
@@ -157,13 +159,13 @@ export function AdminDashboard() {
     const newStatus = !selectedUser.isActive;
     try {
       await adminService.updateUserStatus(selectedUser.id, newStatus);
-      toast.success(`User ${newStatus ? 'activated' : 'deactivated'} successfully`);
+      toast.success(t(newStatus ? 'admin.userActivated' : 'admin.userDeactivated'));
       setShowBlockModal(false);
       setSelectedUser(null);
       fetchUsers(currentPage, searchKeyword);
       fetchStatistics();
     } catch (error) {
-      toast.error('Failed to update user status');
+      toast.error(t('error.somethingWentWrong'));
       console.error('Error updating user status:', error);
     }
   };
@@ -177,16 +179,16 @@ export function AdminDashboard() {
     setCurrentPage(0);
     fetchStatistics();
     fetchUsers(0, '', false);
-    toast.success('Data refreshed');
+    toast.success(t('admin.dataRefreshed'));
   };
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Admin Dashboard</h1>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('admin.title')}</h1>
         <p className="text-gray-600 dark:text-gray-400 mt-1">
-          System administration and management
+          {t('admin.systemAdministration')}
         </p>
       </div>
 
@@ -198,9 +200,9 @@ export function AdminDashboard() {
               <Shield className="h-12 w-12 text-primary-600 dark:text-primary-400" />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Welcome, {user?.fullName || user?.username}</h2>
-              <p className="text-primary-600 dark:text-primary-400 font-medium">Role: {userRole}</p>
-              <p className="text-gray-600 dark:text-gray-400 text-sm mt-1">You have full administrative access to the system</p>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{t('admin.welcome')}, {user?.fullName || user?.username}</h2>
+              <p className="text-primary-600 dark:text-primary-400 font-medium">{t('admin.role')}: {userRole}</p>
+              <p className="text-gray-600 dark:text-gray-400 text-sm mt-1">{t('admin.fullAdminAccess')}</p>
             </div>
           </div>
         </CardContent>
@@ -217,7 +219,7 @@ export function AdminDashboard() {
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
             }`}
           >
-            Overview
+            {t('admin.overview')}
           </button>
           <button
             onClick={() => setActiveTab('users')}
@@ -227,7 +229,7 @@ export function AdminDashboard() {
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
             }`}
           >
-            User Management
+            {t('admin.userManagement')}
           </button>
         </nav>
       </div>
@@ -241,12 +243,12 @@ export function AdminDashboard() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Users</p>
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('admin.totalUsers')}</p>
                     <p className="text-2xl font-bold text-gray-900 dark:text-white mt-2">
                       {statistics ? statistics.totalUsers : '...'}
                     </p>
                     <p className="text-xs text-gray-500 mt-1">
-                      Active: {statistics?.activeUsers || 0} | Inactive: {statistics?.inactiveUsers || 0}
+                      {t('admin.active')}: {statistics?.activeUsers || 0} | {t('admin.inactive')}: {statistics?.inactiveUsers || 0}
                     </p>
                   </div>
                   <Users className="h-12 w-12 text-primary-600" />
@@ -258,12 +260,12 @@ export function AdminDashboard() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Tasks</p>
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('admin.totalTasks')}</p>
                     <p className="text-2xl font-bold text-gray-900 dark:text-white mt-2">
                       {statistics ? statistics.totalTasks : '...'}
                     </p>
                     <p className="text-xs text-gray-500 mt-1">
-                      Completed: {statistics?.completedTasks || 0} | Pending: {statistics?.pendingTasks || 0}
+                      {t('admin.completed')}: {statistics?.completedTasks || 0} | {t('admin.pending')}: {statistics?.pendingTasks || 0}
                     </p>
                   </div>
                   <Activity className="h-12 w-12 text-secondary-600" />
@@ -275,12 +277,12 @@ export function AdminDashboard() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Categories</p>
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('admin.categories')}</p>
                     <p className="text-2xl font-bold text-gray-900 dark:text-white mt-2">
                       {statistics ? statistics.totalCategories : '...'}
                     </p>
                     <p className="text-xs text-gray-500 mt-1">
-                      System-wide categories
+                      {t('admin.systemWideCategories')}
                     </p>
                   </div>
                   <Database className="h-12 w-12 text-accent-600" />
@@ -292,12 +294,12 @@ export function AdminDashboard() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">User Roles</p>
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('admin.userRoles')}</p>
                     <p className="text-2xl font-bold text-gray-900 dark:text-white mt-2">
                       {statistics ? statistics.adminUsers : '...'}
                     </p>
                     <p className="text-xs text-gray-500 mt-1">
-                      Admins | Regular: {statistics?.regularUsers || 0}
+                      {t('admin.admins')} | {t('admin.regular')}: {statistics?.regularUsers || 0}
                     </p>
                   </div>
                   <Shield className="h-12 w-12 text-green-600" />
@@ -313,10 +315,10 @@ export function AdminDashboard() {
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle>User Management</CardTitle>
+              <CardTitle>{t('admin.userManagement')}</CardTitle>
               <Button onClick={handleRefresh} variant="outline" size="sm">
                 <RefreshCw className="h-4 w-4 mr-2" />
-                Refresh
+                {t('admin.refresh')}
               </Button>
             </div>
           </CardHeader>
@@ -327,7 +329,7 @@ export function AdminDashboard() {
               <form onSubmit={handleSearch} className="flex gap-2">
                 <Input
                   type="text"
-                  placeholder="Search users by name, email, or username..."
+                  placeholder={t('admin.searchUsers')}
                   value={searchKeyword}
                   onChange={(e) => setSearchKeyword(e.target.value)}
                   className="flex-1"
@@ -335,7 +337,7 @@ export function AdminDashboard() {
                 />
                 <Button type="submit" disabled={useAdvancedFilter}>
                   <Search className="h-4 w-4 mr-2" />
-                  Search
+                  {t('admin.search')}
                 </Button>
                 <Button
                   type="button"
@@ -343,7 +345,7 @@ export function AdminDashboard() {
                   onClick={() => setShowAdvancedFilter(!showAdvancedFilter)}
                 >
                   <Filter className="h-4 w-4 mr-2" />
-                  Advanced Filter
+                  {t('admin.advancedFilter')}
                 </Button>
               </form>
 
@@ -351,15 +353,15 @@ export function AdminDashboard() {
               {showAdvancedFilter && (
                 <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-800/50">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Advanced Filters</h3>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('admin.advancedFilters')}</h3>
                     <div className="flex gap-2">
                       <Button size="sm" onClick={addFilter}>
                         <Plus className="h-4 w-4 mr-1" />
-                        Add Filter
+                        {t('admin.addFilter')}
                       </Button>
                       {filters.length > 0 && (
                         <Button size="sm" variant="outline" onClick={clearFilters}>
-                          Clear All
+                          {t('admin.clearAll')}
                         </Button>
                       )}
                     </div>
@@ -368,7 +370,7 @@ export function AdminDashboard() {
                   {/* Filter Rows */}
                   {filters.length === 0 ? (
                     <p className="text-gray-500 dark:text-gray-400 text-center py-4">
-                      No filters added. Click "Add Filter" to start filtering.
+                      {t('admin.noFiltersAdded')}
                     </p>
                   ) : (
                     <div className="space-y-3">
@@ -392,14 +394,14 @@ export function AdminDashboard() {
                               onChange={(e) => updateFilter(index, 'value', e.target.value)}
                               className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                             >
-                              <option value="">Select status...</option>
-                              <option value="true">Active</option>
-                              <option value="false">Inactive</option>
+                              <option value="">{t('admin.selectStatus')}</option>
+                              <option value="true">{t('admin.active')}</option>
+                              <option value="false">{t('admin.inactive')}</option>
                             </select>
                           ) : (
                             <Input
                               type="text"
-                              placeholder="Enter value..."
+                              placeholder={t('admin.enterValue')}
                               value={filter.value}
                               onChange={(e) => updateFilter(index, 'value', e.target.value)}
                               className="flex-1"
@@ -423,7 +425,7 @@ export function AdminDashboard() {
                     <div className="mt-4 flex justify-end">
                       <Button onClick={handleAdvancedFilter}>
                         <Filter className="h-4 w-4 mr-2" />
-                        Apply Filters
+                        {t('admin.applyFilters')}
                       </Button>
                     </div>
                   )}
@@ -433,7 +435,7 @@ export function AdminDashboard() {
               {/* Active Filters Display */}
               {useAdvancedFilter && filters.length > 0 && (
                 <div className="flex flex-wrap gap-2">
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Active filters:</span>
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('admin.activeFilters')}</span>
                   {filters.map((filter, index) => (
                     <span
                       key={index}
@@ -460,7 +462,7 @@ export function AdminDashboard() {
             ) : users.length === 0 ? (
               <div className="text-center py-12">
                 <Users className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-600 dark:text-gray-400">No users found</p>
+                <p className="text-gray-600 dark:text-gray-400">{t('admin.noUsersFound')}</p>
               </div>
             ) : (
               <>
@@ -468,12 +470,12 @@ export function AdminDashboard() {
                   <table className="w-full">
                     <thead>
                       <tr className="border-b border-gray-200 dark:border-gray-700">
-                        <th className="text-left py-3 px-4 font-semibold text-sm text-gray-900 dark:text-white">User</th>
-                        <th className="text-left py-3 px-4 font-semibold text-sm text-gray-900 dark:text-white">Email</th>
-                        <th className="text-left py-3 px-4 font-semibold text-sm text-gray-900 dark:text-white">Role</th>
-                        <th className="text-left py-3 px-4 font-semibold text-sm text-gray-900 dark:text-white">Status</th>
-                        <th className="text-left py-3 px-4 font-semibold text-sm text-gray-900 dark:text-white">Created</th>
-                        <th className="text-right py-3 px-4 font-semibold text-sm text-gray-900 dark:text-white">Actions</th>
+                        <th className="text-left py-3 px-4 font-semibold text-sm text-gray-900 dark:text-white">{t('admin.user')}</th>
+                        <th className="text-left py-3 px-4 font-semibold text-sm text-gray-900 dark:text-white">{t('admin.email')}</th>
+                        <th className="text-left py-3 px-4 font-semibold text-sm text-gray-900 dark:text-white">{t('admin.role')}</th>
+                        <th className="text-left py-3 px-4 font-semibold text-sm text-gray-900 dark:text-white">{t('admin.status')}</th>
+                        <th className="text-left py-3 px-4 font-semibold text-sm text-gray-900 dark:text-white">{t('admin.created')}</th>
+                        <th className="text-right py-3 px-4 font-semibold text-sm text-gray-900 dark:text-white">{t('admin.actions')}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -515,7 +517,7 @@ export function AdminDashboard() {
                               }`}
                             >
                               {u.isActive ? <UserCheck className="h-3 w-3" /> : <UserX className="h-3 w-3" />}
-                              {u.isActive ? 'Active' : 'Inactive'}
+                              {u.isActive ? t('admin.active') : t('admin.inactive')}
                             </span>
                           </td>
                           <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">
@@ -534,7 +536,7 @@ export function AdminDashboard() {
                                     ? 'text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20'
                                     : 'text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20'
                                 }`}
-                                title={u.isActive ? 'Block user' : 'Activate user'}
+                                title={u.isActive ? t('admin.blockUser') : t('admin.activateUserAction')}
                               >
                                 {u.isActive ? <UserX className="h-4 w-4" /> : <UserCheck className="h-4 w-4" />}
                               </button>
@@ -550,7 +552,7 @@ export function AdminDashboard() {
                 {totalPages > 1 && (
                   <div className="flex items-center justify-between mt-6">
                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                      Page {currentPage + 1} of {totalPages}
+                      {t('pagination.page')} {currentPage + 1} {t('pagination.of')} {totalPages}
                     </p>
                     <div className="flex gap-2">
                       <Button
@@ -559,7 +561,7 @@ export function AdminDashboard() {
                         variant="outline"
                         size="sm"
                       >
-                        Previous
+                        {t('common.previous')}
                       </Button>
                       <Button
                         onClick={() => handlePageChange(currentPage + 1)}
@@ -567,7 +569,7 @@ export function AdminDashboard() {
                         variant="outline"
                         size="sm"
                       >
-                        Next
+                        {t('common.next')}
                       </Button>
                     </div>
                   </div>
@@ -585,13 +587,13 @@ export function AdminDashboard() {
           setShowBlockModal(false);
           setSelectedUser(null);
         }}
-        title={selectedUser?.isActive ? 'Block User' : 'Activate User'}
+        title={selectedUser?.isActive ? t('admin.blockUserTitle') : t('admin.activateUserTitle')}
       >
         <div className="space-y-4">
           <p className="text-gray-600 dark:text-gray-400">
             {selectedUser?.isActive
-              ? `Are you sure you want to block ${selectedUser?.fullName || selectedUser?.username}? Their account will be deactivated.`
-              : `Are you sure you want to activate ${selectedUser?.fullName || selectedUser?.username}? They will be able to log in again.`}
+              ? `${t('admin.blockUserConfirm')} ${selectedUser?.fullName || selectedUser?.username}? ${t('admin.accountDeactivated')}`
+              : `${t('admin.activateUserConfirm')} ${selectedUser?.fullName || selectedUser?.username}? ${t('admin.ableToLogin')}`}
           </p>
           <div className="flex justify-end gap-3">
             <Button
@@ -601,13 +603,13 @@ export function AdminDashboard() {
                 setSelectedUser(null);
               }}
             >
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button
               variant={selectedUser?.isActive ? 'danger' : 'success'}
               onClick={handleToggleStatusWithConfirmation}
             >
-              {selectedUser?.isActive ? 'Block User' : 'Activate User'}
+              {selectedUser?.isActive ? t('admin.blockUserTitle') : t('admin.activateUserTitle')}
             </Button>
           </div>
         </div>

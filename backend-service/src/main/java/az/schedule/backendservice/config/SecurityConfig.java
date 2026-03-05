@@ -20,7 +20,7 @@ import javax.crypto.spec.SecretKeySpec;
 @Configuration
 public class SecurityConfig {
     private static final String[] PUBLIC_APIS = {
-            "/api/v1/public/**", "/api/v1/auth/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/ws/**"
+            "/api/v1/public/**", "/api/v1/auth/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/ws/**", "/api/v1/webhook/**"
     };
     
     private static final String[] ADMIN_APIS = {
@@ -47,6 +47,8 @@ public class SecurityConfig {
     @Bean
     public CorsFilter corsFilter() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
+        corsConfiguration.addAllowedOriginPattern("https://astramind.io.vn");
+        corsConfiguration.addAllowedOriginPattern("http://astramind.io.vn");
         corsConfiguration.addAllowedOriginPattern("http://localhost:5173");
         corsConfiguration.addAllowedOriginPattern("http://localhost:3000");
         corsConfiguration.addAllowedOriginPattern("chrome-extension://*");
@@ -89,6 +91,8 @@ public class SecurityConfig {
         config.addAllowedOriginPattern("http://localhost:3000");
         config.addAllowedOriginPattern("chrome-extension://*");
         config.addAllowedOriginPattern("http://103.90.227.143");
+        config.addAllowedOriginPattern("https://astramind.io.vn");
+        config.addAllowedOriginPattern("http://astramind.io.vn");
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
         config.addExposedHeader("Authorization");

@@ -14,7 +14,7 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Table(name = "Notification")
 public class Notification extends BaseEntity{
-    @NotBlank(message = "Title is required")
+    @NotBlank(message = "{validation.title.required}")
     String title;
 
     @Column(name = "Message", nullable = false, columnDefinition = "NVARCHAR(500)")

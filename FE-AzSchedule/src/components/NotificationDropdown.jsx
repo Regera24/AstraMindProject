@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Bell, Check, CheckCheck, Clock, X } from 'lucide-react';
 import { useNotifications } from '../contexts/NotificationContext.jsx';
 import { useNavigate } from 'react-router-dom';
@@ -8,6 +9,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { vi } from 'date-fns/locale';
 
 export function NotificationDropdown() {
+  const { t } = useTranslation();
   const { notifications, unreadCount, markAsRead, markAllAsRead, loading } = useNotifications();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -106,11 +108,11 @@ export function NotificationDropdown() {
             <div className="flex items-center gap-2">
               <Bell className="h-4 w-4 text-primary-600 dark:text-primary-400" />
               <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
-                Thông báo
+                {t('notifications.title')}
               </h3>
               {unreadCount > 0 && (
                 <Badge variant="danger" className="text-xs">
-                  {unreadCount} mới
+                  {unreadCount} {t('notifications.new')}
                 </Badge>
               )}
             </div>
@@ -120,7 +122,7 @@ export function NotificationDropdown() {
                 className="text-xs text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium flex items-center gap-1 transition-colors"
               >
                 <CheckCheck className="h-3 w-3" />
-                Đọc tất cả
+                {t('notifications.markAllRead')}
               </button>
             )}
           </div>
@@ -137,7 +139,7 @@ export function NotificationDropdown() {
                   <Bell className="h-8 w-8 text-gray-400 dark:text-gray-500" />
                 </div>
                 <p className="text-sm text-gray-500 dark:text-gray-400 text-center">
-                  Chưa có thông báo nào
+                  {t('notifications.noNotifications')}
                 </p>
               </div>
             ) : (
@@ -183,7 +185,7 @@ export function NotificationDropdown() {
                             <button
                               onClick={(e) => handleMarkAsRead(e, notification.id)}
                               className="flex-shrink-0 p-1 rounded-full hover:bg-primary-100 dark:hover:bg-primary-900/30 text-primary-600 dark:text-primary-400 opacity-0 group-hover:opacity-100 transition-opacity"
-                              title="Đánh dấu đã đọc"
+                              title={t('notifications.markAsRead')}
                             >
                               <Check className="h-4 w-4" />
                             </button>
@@ -218,7 +220,7 @@ export function NotificationDropdown() {
                 }}
                 className="w-full text-center text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium transition-colors"
               >
-                Xem tất cả thông báo
+                {t('notifications.markAllAsRead')}
               </button>
             </div>
           )}

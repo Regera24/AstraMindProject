@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from 'lucide-react';
 import { Button } from './ui/Button.jsx';
 import { Card, CardContent } from './ui/Card.jsx';
@@ -20,7 +21,7 @@ import {
 import dayjs from 'dayjs';
 
 // WeekView Component
-const WeekView = ({ tasks, currentDate, onEditTask }) => {
+const WeekView = ({ tasks, currentDate, onEditTask, t }) => {
   const weekDays = getWeekDays(currentDate);
   const groupedTasks = groupTasksByDate(tasks);
   const HOUR_HEIGHT = 60;
@@ -63,7 +64,7 @@ const WeekView = ({ tasks, currentDate, onEditTask }) => {
       <div className="sticky top-0 z-10 bg-white dark:bg-gray-800 shadow-sm">
         <div className="flex border-b border-gray-200 dark:border-gray-700">
           <div className="w-20 p-4 bg-gray-50 dark:bg-gray-700 border-r border-gray-200 dark:border-gray-600">
-            <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 text-center">TIME</div>
+            <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 text-center">{t('calendar.time')}</div>
           </div>
           {weekDays.map((day) => {
             const isCurrentDay = isToday(day);
@@ -97,7 +98,7 @@ const WeekView = ({ tasks, currentDate, onEditTask }) => {
           <div className="flex min-h-[60px]">
             <div className="w-20 bg-gray-50 dark:bg-gray-700 border-r border-gray-200 dark:border-gray-600 flex items-center justify-center sticky left-0">
               <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 text-center">
-                ALL-DAY
+                {t('calendar.allDay')}
               </div>
             </div>
             
@@ -217,7 +218,7 @@ const WeekView = ({ tasks, currentDate, onEditTask }) => {
 };
 
 // MonthView Component
-const MonthView = ({ tasks, currentDate, onEditTask }) => {
+const MonthView = ({ tasks, currentDate, onEditTask, t }) => {
   const monthDays = getMonthDays(currentDate.getMonth(), currentDate.getFullYear());
   const groupedTasks = groupTasksByDate(tasks);
 
@@ -318,6 +319,7 @@ const MonthView = ({ tasks, currentDate, onEditTask }) => {
 };
 
 export function CalendarView({ tasks, viewType, currentDate, onEditTask, onDateRangeChange }) {
+  const { t } = useTranslation();
   // viewType and currentDate now come from parent
 
   const navigatePrevious = () => {
@@ -374,10 +376,10 @@ export function CalendarView({ tasks, viewType, currentDate, onEditTask, onDateR
             <div>
               <div className="flex items-center gap-2">
                 <CalendarIcon className="h-5 w-5 text-gray-700 dark:text-gray-300" />
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Calendar View</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('calendar.calendarView')}</h3>
               </div>
               <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                {getDateRangeTitle()} • {tasks.length} tasks
+                {getDateRangeTitle()} • {tasks.length} {t('calendar.tasks')}
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -390,7 +392,7 @@ export function CalendarView({ tasks, viewType, currentDate, onEditTask, onDateR
                     onClick={() => handleViewTypeChange(view.type)}
                     className="h-8"
                   >
-                    {view.type === 'week' ? 'Week' : 'Month'}
+                    {view.type === 'week' ? t('calendar.week') : t('calendar.month')}
                   </Button>
                 ))}
               </div>
@@ -399,7 +401,7 @@ export function CalendarView({ tasks, viewType, currentDate, onEditTask, onDateR
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
                 <Button variant="outline" onClick={handleTodayClick}>
-                  Today
+                  {t('calendar.today')}
                 </Button>
                 <Button variant="outline" size="icon" onClick={navigateNext}>
                   <ChevronRight className="h-4 w-4" />
@@ -410,9 +412,9 @@ export function CalendarView({ tasks, viewType, currentDate, onEditTask, onDateR
         </div>
         
         {viewType === 'week' ? (
-          <WeekView tasks={tasks} currentDate={currentDate} onEditTask={onEditTask} />
+          <WeekView tasks={tasks} currentDate={currentDate} onEditTask={onEditTask} t={t} />
         ) : (
-          <MonthView tasks={tasks} currentDate={currentDate} onEditTask={onEditTask} />
+          <MonthView tasks={tasks} currentDate={currentDate} onEditTask={onEditTask} t={t} />
         )}
       </CardContent>
     </Card>

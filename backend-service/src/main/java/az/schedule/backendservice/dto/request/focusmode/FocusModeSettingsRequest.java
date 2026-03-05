@@ -16,24 +16,24 @@ import java.util.List;
 @AllArgsConstructor
 public class FocusModeSettingsRequest {
     
-    @NotNull(message = "isEnabled is required")
+    @NotNull(message = "{validation.is.enabled.required}")
     private Boolean isEnabled;
     
     private List<String> blockedWebsites;
     
-    @Min(value = 1, message = "Work minutes must be at least 1")
-    @Max(value = 60, message = "Work minutes must not exceed 60")
+    @Min(value = 1, message = "{validation.pomodoro.work.min}")
+    @Max(value = 60, message = "{validation.pomodoro.work.max}")
     private Integer pomodoroWorkMinutes;
     
-    @Min(value = 1, message = "Break minutes must be at least 1")
-    @Max(value = 30, message = "Break minutes must not exceed 30")
+    @Min(value = 1, message = "{validation.pomodoro.break.min}")
+    @Max(value = 30, message = "{validation.pomodoro.break.max}")
     private Integer pomodoroBreakMinutes;
     
-    @Min(value = 1, message = "Long break minutes must be at least 1")
-    @Max(value = 60, message = "Long break minutes must not exceed 60")
+    @Min(value = 1, message = "{validation.pomodoro.long.break.min}")
+    @Max(value = 60, message = "{validation.pomodoro.long.break.max}")
     private Integer pomodoroLongBreakMinutes;
     
-    @Min(value = 1, message = "Sessions count must be at least 1")
-    @Max(value = 10, message = "Sessions count must not exceed 10")
+    @Min(value = 1, message = "{validation.pomodoro.sessions.min}")
+    @Max(value = 10, message = "{validation.pomodoro.sessions.max}")
     private Integer pomodoroSessionsBeforeLongBreak;
 }

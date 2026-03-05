@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, UserPlus } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { Button } from '../components/ui/Button.jsx';
 import { Input } from '../components/ui/Input.jsx';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/Card.jsx';
@@ -10,8 +11,10 @@ import { FormError } from '../components/ui/FormError.jsx';
 import { validateRegistration } from '../utils/validation.js';
 import { register } from '../services/authService.js';
 import toast from 'react-hot-toast';
+import logo from '../assets/images/logo.png';
 
 export function Register() {
+  const { t } = useTranslation();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     username: '',
@@ -32,10 +35,10 @@ export function Register() {
     e.preventDefault();
     
     // Validate form data
-    const validation = validateRegistration(formData);
+    const validation = validateRegistration(formData, t);
     if (!validation.isValid) {
       setValidationErrors(validation.errors);
-      toast.error('Please fix the validation errors');
+      toast.error(t('validation.fixErrors'));
       return;
     }
     
@@ -44,10 +47,11 @@ export function Register() {
 
     try {
       await register(formData);
-      toast.success('Registration successful! Please login.');
+      toast.success(t('auth.registerSuccess'));
       navigate('/login');
     } catch (error) {
-      const errorMessage = error.response?.data?.message || error.message || 'Registration failed';
+      console.log(error)
+      const errorMessage = error.response?.data?.message || error.message || t('error.registerFailed');
       toast.error(errorMessage);
     } finally {
       setIsLoading(false);
@@ -64,22 +68,30 @@ export function Register() {
       >
         <Card className="shadow-xl">
           <CardHeader className="space-y-1 text-center">
+            {/* Logo */}
+            <div className="flex justify-center mb-4">
+              <img 
+                src={logo} 
+                alt="AstraMind Logo" 
+                className="h-16 w-16 object-contain"
+              />
+            </div>
             <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary-600 to-primary-800 bg-clip-text text-transparent">
-              Create Account
+              {t('auth.createAccount')}
             </CardTitle>
-            <CardDescription>Fill in your information to get started</CardDescription>
+            <CardDescription>{t('auth.fillInformation')}</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="username" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Username *
+                    {t('auth.username')} *
                   </label>
                   <Input
                     id="username"
                     type="text"
-                    placeholder="Enter username"
+                    placeholder={t('auth.enterUsername')}
                     value={formData.username}
                     onChange={(e) => setFormData({ ...formData, username: e.target.value })}
                     disabled={isLoading}
@@ -89,12 +101,12 @@ export function Register() {
                 </div>
                 <div>
                   <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Full Name *
+                    {t('auth.fullName')} *
                   </label>
                   <Input
                     id="fullName"
                     type="text"
-                    placeholder="Enter full name"
+                    placeholder={t('auth.enterFullName')}
                     value={formData.fullName}
                     onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                     disabled={isLoading}
@@ -107,12 +119,12 @@ export function Register() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Email *
+                    {t('auth.email')} *
                   </label>
                   <Input
                     id="email"
                     type="text"
-                    placeholder="Enter email"
+                    placeholder={t('auth.enterEmail')}
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     disabled={isLoading}
@@ -122,12 +134,12 @@ export function Register() {
                 </div>
                 <div>
                   <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Phone Number *
+                    {t('auth.phoneNumber')} 
                   </label>
                   <Input
                     id="phoneNumber"
                     type="text"
-                    placeholder="Enter phone number"
+                    placeholder={t('auth.enterPhoneNumber')}
                     value={formData.phoneNumber}
                     onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
                     disabled={isLoading}
@@ -139,13 +151,13 @@ export function Register() {
 
               <div>
                 <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Password *
+                  {t('auth.password')} *
                 </label>
                 <div className="relative">
                   <Input
                     id="password"
                     type={showPassword ? 'text' : 'password'}
-                    placeholder="Enter password"
+                    placeholder={t('auth.enterPassword')}
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                     disabled={isLoading}
@@ -169,7 +181,7 @@ export function Register() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="birthDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Birth Date
+                    {t('auth.birthDate')}
                   </label>
                   <Input
                     id="birthDate"
@@ -181,7 +193,7 @@ export function Register() {
                 </div>
                 <div>
                   <label htmlFor="gender" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Gender
+                    {t('auth.gender')}
                   </label>
                   <select
                     id="gender"
@@ -190,8 +202,8 @@ export function Register() {
                     className="flex h-10 w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
                     disabled={isLoading}
                   >
-                    <option value="true">Male</option>
-                    <option value="false">Female</option>
+                    <option value="true">{t('auth.male')}</option>
+                    <option value="false">{t('auth.female')}</option>
                   </select>
                 </div>
               </div>
@@ -200,21 +212,21 @@ export function Register() {
                 {isLoading ? (
                   <>
                     <LoadingSpinner size="sm" className="mr-2" />
-                    Creating account...
+                    {t('auth.creatingAccount')}
                   </>
                 ) : (
                   <>
                     <UserPlus className="mr-2 h-5 w-5" />
-                    Register
+                    {t('auth.register')}
                   </>
                 )}
               </Button>
             </form>
             <div className="text-center mt-6">
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Already have an account?{' '}
+                {t('auth.alreadyHaveAccount')}{' '}
                 <Link to="/login" className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 font-medium">
-                  Login here
+                  {t('auth.loginHere')}
                 </Link>
               </p>
             </div>

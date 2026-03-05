@@ -7,6 +7,8 @@ import az.schedule.backendservice.repository.TaskRepository;
 import az.schedule.backendservice.service.StreakService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -20,23 +22,29 @@ import java.util.stream.Collectors;
 public class StreakServiceImpl implements StreakService {
     
     private final TaskRepository taskRepository;
+    private final MessageSource messageSource;
     
-    private static final List<StreakResponse.StreakMilestone> MILESTONES = List.of(
-        StreakResponse.StreakMilestone.builder()
-            .days(3).title("Getting Started").emoji("🌱").achieved(false).build(),
-        StreakResponse.StreakMilestone.builder()
-            .days(7).title("One Week Warrior").emoji("⚡").achieved(false).build(),
-        StreakResponse.StreakMilestone.builder()
-            .days(14).title("Two Week Champion").emoji("🏆").achieved(false).build(),
-        StreakResponse.StreakMilestone.builder()
-            .days(30).title("Monthly Master").emoji("👑").achieved(false).build(),
-        StreakResponse.StreakMilestone.builder()
-            .days(50).title("Productivity Pro").emoji("💎").achieved(false).build(),
-        StreakResponse.StreakMilestone.builder()
-            .days(100).title("Century Legend").emoji("🔥").achieved(false).build(),
-        StreakResponse.StreakMilestone.builder()
-            .days(365).title("Year Hero").emoji("🌟").achieved(false).build()
+    private static final List<MilestoneConfig> MILESTONE_CONFIGS = List.of(
+        new MilestoneConfig(3, "streak.milestone.getting.started", "🌱"),
+        new MilestoneConfig(7, "streak.milestone.one.week.warrior", "⚡"),
+        new MilestoneConfig(14, "streak.milestone.two.week.champion", "🏆"),
+        new MilestoneConfig(30, "streak.milestone.monthly.master", "👑"),
+        new MilestoneConfig(50, "streak.milestone.productivity.pro", "💎"),
+        new MilestoneConfig(100, "streak.milestone.century.legend", "🔥"),
+        new MilestoneConfig(365, "streak.milestone.year.hero", "🌟")
     );
+    
+    private static class MilestoneConfig {
+        final int days;
+        final String messageKey;
+        final String emoji;
+        
+        MilestoneConfig(int days, String messageKey, String emoji) {
+            this.days = days;
+            this.messageKey = messageKey;
+            this.emoji = emoji;
+        }
+    }
     
     @Override
     public StreakResponse getUserStreak(Long accountId) {
@@ -72,30 +80,33 @@ public class StreakServiceImpl implements StreakService {
         // Week activity (last 7 days)
         List<StreakResponse.DayActivity> weekActivity = calculateWeekActivity(completedTasksByDate);
         
+        // Get current locale
+        Locale locale = LocaleContextHolder.getLocale();
+        
         // Milestones with achievement status
-        List<StreakResponse.StreakMilestone> milestones = MILESTONES.stream()
-            .map(m -> StreakResponse.StreakMilestone.builder()
-                .days(m.getDays())
-                .title(m.getTitle())
-                .emoji(m.getEmoji())
-                .achieved(currentStreak >= m.getDays() || longestStreak >= m.getDays())
+        List<StreakResponse.StreakMilestone> milestones = MILESTONE_CONFIGS.stream()
+            .map(config -> StreakResponse.StreakMilestone.builder()
+                .days(config.days)
+                .title(messageSource.getMessage(config.messageKey, null, locale))
+                .emoji(config.emoji)
+                .achieved(currentStreak >= config.days || longestStreak >= config.days)
                 .build())
             .collect(Collectors.toList());
         
         // Find next milestone
-        StreakResponse.StreakMilestone nextMilestone = MILESTONES.stream()
-            .filter(m -> m.getDays() > currentStreak)
+        StreakResponse.StreakMilestone nextMilestone = MILESTONE_CONFIGS.stream()
+            .filter(config -> config.days > currentStreak)
             .findFirst()
-            .map(m -> StreakResponse.StreakMilestone.builder()
-                .days(m.getDays())
-                .title(m.getTitle())
-                .emoji(m.getEmoji())
+            .map(config -> StreakResponse.StreakMilestone.builder()
+                .days(config.days)
+                .title(messageSource.getMessage(config.messageKey, null, locale))
+                .emoji(config.emoji)
                 .achieved(false)
                 .build())
             .orElse(null);
         
         // Generate motivational message
-        String motivationalMessage = generateMotivationalMessage(currentStreak, isActiveToday);
+        String motivationalMessage = generateMotivationalMessage(currentStreak, isActiveToday, locale);
         
         return StreakResponse.builder()
             .currentStreak(currentStreak)
@@ -182,35 +193,35 @@ public class StreakServiceImpl implements StreakService {
         return weekActivity;
     }
     
-    private String generateMotivationalMessage(int currentStreak, boolean isActiveToday) {
+    private String generateMotivationalMessage(int currentStreak, boolean isActiveToday, Locale locale) {
         if (currentStreak == 0) {
-            return "Start your streak today! Complete a task to begin your journey. 🚀";
+            return messageSource.getMessage("streak.message.start", null, locale);
         }
         
         if (!isActiveToday) {
-            return "Keep your " + currentStreak + "-day streak alive! Complete a task today! 🔥";
+            return messageSource.getMessage("streak.message.keep.alive", new Object[]{currentStreak}, locale);
         }
         
         if (currentStreak == 1) {
-            return "Great start! You've begun your streak. Keep it going tomorrow! 💪";
+            return messageSource.getMessage("streak.message.great.start", null, locale);
         }
         
         if (currentStreak < 7) {
-            return "Amazing! " + currentStreak + " days strong. You're building momentum! ⚡";
+            return messageSource.getMessage("streak.message.building.momentum", new Object[]{currentStreak}, locale);
         }
         
         if (currentStreak < 14) {
-            return "Incredible! " + currentStreak + " days in a row. You're unstoppable! 🏆";
+            return messageSource.getMessage("streak.message.unstoppable", new Object[]{currentStreak}, locale);
         }
         
         if (currentStreak < 30) {
-            return "Phenomenal! " + currentStreak + " days of productivity. You're a champion! 👑";
+            return messageSource.getMessage("streak.message.champion", new Object[]{currentStreak}, locale);
         }
         
         if (currentStreak < 100) {
-            return "Legendary! " + currentStreak + " days streak. You're an inspiration! 💎";
+            return messageSource.getMessage("streak.message.inspiration", new Object[]{currentStreak}, locale);
         }
         
-        return "Unbelievable! " + currentStreak + " days of excellence. You're a productivity legend! 🌟";
+        return messageSource.getMessage("streak.message.legend", new Object[]{currentStreak}, locale);
     }
 }

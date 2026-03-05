@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Flame, TrendingUp, Trophy, Zap, Award, Target } from 'lucide-react';
 import { getUserStreak } from '../services/streakService.js';
@@ -196,12 +197,13 @@ const MilestoneBadge = ({ milestone, isNext = false }) => {
 };
 
 export const StreakWidget = () => {
+  const { t, i18n } = useTranslation();
   const [streak, setStreak] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchStreak();
-  }, []);
+  }, [i18n.language]); // Re-fetch when language changes
 
   const fetchStreak = async () => {
     try {
@@ -238,7 +240,7 @@ export const StreakWidget = () => {
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <Flame className="w-6 h-6 text-orange-500" />
-            Streak Fire
+            {t('streak.streakFire')}
           </CardTitle>
           {isActiveToday && (
             <motion.div
@@ -247,7 +249,7 @@ export const StreakWidget = () => {
               className="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full text-xs font-semibold flex items-center gap-1"
             >
               <Zap className="w-3 h-3" />
-              Active Today
+              {t('streak.activeToday')}
             </motion.div>
           )}
         </div>
@@ -289,7 +291,7 @@ export const StreakWidget = () => {
                 {currentStreak}
               </p>
               <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">
-                Current Streak
+                {t('streak.currentStreak')}
               </p>
             </motion.div>
           </div>
@@ -304,7 +306,7 @@ export const StreakWidget = () => {
                 {longestStreak}
               </p>
               <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">
-                Best Streak
+                {t('streak.bestStreak')}
               </p>
             </div>
           </div>
@@ -326,7 +328,7 @@ export const StreakWidget = () => {
         <div>
           <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
             <TrendingUp className="w-4 h-4" />
-            This Week
+            {t('streak.thisWeek')}
           </h4>
           <WeekActivityBar weekActivity={weekActivity?.map(day => ({
             ...day,
@@ -339,7 +341,7 @@ export const StreakWidget = () => {
           <div>
             <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
               <Target className="w-4 h-4" />
-              Next Milestone
+              {t('streak.nextMilestone')}
             </h4>
             <MilestoneBadge milestone={nextMilestone} isNext={true} />
             <div className="mt-2 flex items-center gap-2">
@@ -352,7 +354,7 @@ export const StreakWidget = () => {
                 />
               </div>
               <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
-                {nextMilestone.days - currentStreak} days left
+                {nextMilestone.days - currentStreak} {t('streak.daysLeft')}
               </span>
             </div>
           </div>
@@ -361,7 +363,7 @@ export const StreakWidget = () => {
         {/* Milestones Grid */}
         <div>
           <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
-            Milestones
+            {t('streak.milestones')}
           </h4>
           <div className="grid grid-cols-2 gap-2">
             {milestones?.slice(0, 4).map((milestone, index) => (

@@ -30,6 +30,7 @@ public class TaskReminderService {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime reminderThreshold = now.plusMinutes(10);
 
+        // Tasks starting soon
         List<Task> tasksStartingSoon = taskRepository.findTasksStartingSoon(
                 reminderThreshold,
                 now,
@@ -41,13 +42,14 @@ public class TaskReminderService {
             createReminderNotification(
                     task,
                     NotificationType.TASK_REMINDER,
-                    "Task starting soon",
+                    NotificationType.TASK_REMINDER.getTitle(),
                     trendyContent
             );
             task.setStartReminderSent(true);
             taskRepository.save(task);
         }
 
+        // Tasks nearing deadline
         List<TaskStatus> activeStatuses = List.of(TaskStatus.TODO, TaskStatus.IN_PROGRESS);
         List<Task> tasksEndingSoon = taskRepository.findTasksEndingSoon(
                 reminderThreshold,
@@ -60,7 +62,7 @@ public class TaskReminderService {
             createReminderNotification(
                     task,
                     NotificationType.TASK_REMINDER,
-                    "Task nearing deadline",
+                    NotificationType.TASK_REMINDER.getTitle(),
                     trendyContent
             );
             task.setEndReminderSent(true);

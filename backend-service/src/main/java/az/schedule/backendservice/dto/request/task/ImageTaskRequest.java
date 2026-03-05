@@ -12,7 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ImageTaskRequest {
-    @NotNull(message = "Image file is required")
+    @NotNull(message = "{validation.image.required}")
     MultipartFile image;
     
     String additionalContext; // Optional context from user

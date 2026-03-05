@@ -51,14 +51,16 @@ public class AITaskServiceImpl implements AITaskService {
             You are an intelligent task parser for a scheduling application.
             Your job is to extract task information from natural language input.
             
+            IMPORTANT: Respond in %s language. All text fields (title, description, suggestedCategory) must be in %s.
+            
             Extract the following information:
-            1. title: A clear, concise task title (REQUIRED)
-            2. description: Detailed description if provided
+            1. title: A clear, concise task title (REQUIRED) - in %s
+            2. description: Detailed description if provided - in %s
             3. startTime: Start date and time in ISO format (yyyy-MM-dd'T'HH:mm:ss)
             4. endTime: End date and time in ISO format (yyyy-MM-dd'T'HH:mm:ss)
             5. priority: LOW, MEDIUM, or HIGH
             6. status: TODO, IN_PROGRESS, DONE, or PAUSED
-            7. suggestedCategory: A suggested category name based on the task content
+            7. suggestedCategory: A suggested category name based on the task content - in %s
             
             Rules:
             - If dates are relative (e.g., "tomorrow", "next week"), calculate the actual date from current time
@@ -82,10 +84,11 @@ public class AITaskServiceImpl implements AITaskService {
             """;
 
     @Override
-    public ParsedTaskResponse parseTaskFromNaturalLanguage(NaturalLanguageTaskRequest request) {
+    public ParsedTaskResponse parseTaskFromNaturalLanguage(NaturalLanguageTaskRequest request, String language) {
         try {
+            String languageName = getLanguageName(language);
             String currentDateTime = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-            String systemPrompt = String.format(SYSTEM_PROMPT, currentDateTime);
+            String systemPrompt = String.format(SYSTEM_PROMPT, languageName, languageName, languageName, languageName, languageName, currentDateTime);
             
             ChatClient chatClient = ChatClient.create(chatModel);
             
@@ -106,8 +109,8 @@ public class AITaskServiceImpl implements AITaskService {
     }
 
     @Override
-    public TaskDTO createTaskFromNaturalLanguage(NaturalLanguageTaskRequest request, Long accountId) {
-        ParsedTaskResponse parsedTask = parseTaskFromNaturalLanguage(request);
+    public TaskDTO createTaskFromNaturalLanguage(NaturalLanguageTaskRequest request, Long accountId, String language) {
+        ParsedTaskResponse parsedTask = parseTaskFromNaturalLanguage(request, language);
         
         TaskRequest taskRequest = TaskRequest.builder()
                 .title(parsedTask.getTitle())
@@ -206,10 +209,12 @@ public class AITaskServiceImpl implements AITaskService {
     private static final String IMAGE_VISION_PROMPT = """
             You are an intelligent task extraction system that analyzes images.
             
-            IMPORTANT: First, determine if this image is related to scheduling, tasks, calendars, or work.
+            IMPORTANT: Respond in %s language. All text fields (title, description, suggestedCategory, message) must be in %s.
+            
+            First, determine if this image is related to scheduling, tasks, calendars, or work.
             
             If the image is NOT related to scheduling/tasks (e.g., random photos, landscapes, food, etc.),
-            respond with ONLY this JSON:
+            respond with ONLY this JSON (in %s):
             {
               "isScheduleRelated": false,
               "message": "This image does not contain schedule or task information.",
@@ -217,7 +222,7 @@ public class AITaskServiceImpl implements AITaskService {
             }
             
             If the image IS schedule-related (calendar, todo list, email about meetings, schedule screenshots, etc.),
-            extract ALL tasks/events from the image and respond with:
+            extract ALL tasks/events from the image and respond with (all text in %s):
             {
               "isScheduleRelated": true,
               "message": "Successfully extracted tasks from image",
@@ -249,12 +254,13 @@ public class AITaskServiceImpl implements AITaskService {
     private static final String[] ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/jpg", "image/png"};
     
     @Override
-    public ImageTaskParseResponse parseTasksFromImage(MultipartFile image, String additionalContext) {
+    public ImageTaskParseResponse parseTasksFromImage(MultipartFile image, String additionalContext, String language) {
         try {
             validateImage(image);
             
+            String languageName = getLanguageName(language);
             String currentDateTime = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-            String promptText = String.format(IMAGE_VISION_PROMPT, currentDateTime);
+            String promptText = String.format(IMAGE_VISION_PROMPT, languageName, languageName, languageName, languageName, currentDateTime);
             
             if (additionalContext != null && !additionalContext.trim().isEmpty()) {
                 promptText += "\n\nAdditional context from user: " + additionalContext;
@@ -284,8 +290,8 @@ public class AITaskServiceImpl implements AITaskService {
     }
     
     @Override
-    public List<TaskDTO> createTasksFromImage(MultipartFile image, String additionalContext, Long accountId) {
-        ImageTaskParseResponse parseResponse = parseTasksFromImage(image, additionalContext);
+    public List<TaskDTO> createTasksFromImage(MultipartFile image, String additionalContext, Long accountId, String language) {
+        ImageTaskParseResponse parseResponse = parseTasksFromImage(image, additionalContext, language);
         
         if (!parseResponse.isScheduleRelated()) {
             throw new AppException(ErrorCode.IMAGE_NOT_SCHEDULE_RELATED);
@@ -313,6 +319,21 @@ public class AITaskServiceImpl implements AITaskService {
         }
         
         return createdTasks;
+    }
+    
+    /**
+     * Convert language code to full language name
+     */
+    private String getLanguageName(String language) {
+        if (language == null || language.trim().isEmpty()) {
+            return "English";
+        }
+        
+        return switch (language.toLowerCase()) {
+            case "vi", "vie", "vietnamese" -> "Vietnamese";
+            case "en", "eng", "english" -> "English";
+            default -> "English";
+        };
     }
     
     private void validateImage(MultipartFile image) {
@@ -344,7 +365,7 @@ public class AITaskServiceImpl implements AITaskService {
      */
     private String callGeminiVisionAPI(String prompt, String base64Image, String mimeType) {
         try {
-            String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=" + geminiApiKey;
+            String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=" + geminiApiKey;
             
             // Build request body for Gemini API
             Map<String, Object> requestBody = new HashMap<>();

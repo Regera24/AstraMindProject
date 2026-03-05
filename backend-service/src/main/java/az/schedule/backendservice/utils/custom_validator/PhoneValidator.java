@@ -12,8 +12,8 @@ public class PhoneValidator implements ConstraintValidator<PhoneConstraint, Stri
 
     @Override
     public boolean isValid(String phone, ConstraintValidatorContext constraintValidatorContext) {
-        if(phone==null)
-            return false;
+        if(phone==null || phone.trim().isEmpty())
+            return true;
         return phone.matches("^(03|05|07|08|09)\\d{8}$");
     }
 }

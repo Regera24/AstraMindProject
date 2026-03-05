@@ -26,6 +26,7 @@ import java.util.List;
 @RequestMapping("/api/v1/categories")
 public class CategoryController {
     private final CategoryService categoryService;
+    private final az.schedule.backendservice.utils.MessageUtils messageUtils;
 
     @Operation(summary = "Create a new category", description = "Create a new category for the current user")
     @PostMapping
@@ -34,7 +35,7 @@ public class CategoryController {
         CategoryDTO category = categoryService.createCategory(request, accountId);
         return ApiResponse.<CategoryDTO>builder()
                 .code(HttpStatus.CREATED.value())
-                .message("Create category successfully")
+                .message(messageUtils.getMessage("success.category.create"))
                 .data(category)
                 .build();
     }
@@ -48,7 +49,7 @@ public class CategoryController {
         CategoryDTO category = categoryService.updateCategory(id, request, accountId);
         return ApiResponse.<CategoryDTO>builder()
                 .code(HttpStatus.OK.value())
-                .message("Update category successfully")
+                .message(messageUtils.getMessage("success.category.update"))
                 .data(category)
                 .build();
     }
@@ -60,7 +61,7 @@ public class CategoryController {
         categoryService.deleteCategory(id, accountId);
         return ApiResponse.<Void>builder()
                 .code(HttpStatus.OK.value())
-                .message("Delete category successfully")
+                .message(messageUtils.getMessage("success.category.delete"))
                 .build();
     }
 
@@ -71,7 +72,7 @@ public class CategoryController {
         CategoryDTO category = categoryService.getCategoryById(id, accountId);
         return ApiResponse.<CategoryDTO>builder()
                 .code(HttpStatus.OK.value())
-                .message("Get category successfully")
+                .message(messageUtils.getMessage("success.category.get"))
                 .data(category)
                 .build();
     }
@@ -90,7 +91,7 @@ public class CategoryController {
         PageResponse<CategoryDTO> categories = categoryService.getCategoriesByAccount(accountId, pageable);
         return ApiResponse.<PageResponse<CategoryDTO>>builder()
                 .code(HttpStatus.OK.value())
-                .message("Get categories successfully")
+                .message(messageUtils.getMessage("success.categories.get"))
                 .data(categories)
                 .build();
     }
@@ -102,7 +103,7 @@ public class CategoryController {
         List<CategoryDTO> categories = categoryService.getAllCategoriesByAccount(accountId);
         return ApiResponse.<List<CategoryDTO>>builder()
                 .code(HttpStatus.OK.value())
-                .message("Get all categories successfully")
+                .message(messageUtils.getMessage("success.categories.get"))
                 .data(categories)
                 .build();
     }
@@ -122,7 +123,7 @@ public class CategoryController {
         PageResponse<CategoryDTO> categories = categoryService.searchCategories(accountId, keyword, pageable);
         return ApiResponse.<PageResponse<CategoryDTO>>builder()
                 .code(HttpStatus.OK.value())
-                .message("Search categories successfully")
+                .message(messageUtils.getMessage("success.categories.get"))
                 .data(categories)
                 .build();
     }

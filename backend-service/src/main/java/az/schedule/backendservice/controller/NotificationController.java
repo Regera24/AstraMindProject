@@ -26,6 +26,7 @@ import java.util.List;
 @RequestMapping("/api/v1/notifications")
 public class NotificationController {
     private final NotificationService notificationService;
+    private final az.schedule.backendservice.utils.MessageUtils messageUtils;
 
     @Operation(summary = "Create a notification", description = "Create a new notification")
     @PostMapping
@@ -34,7 +35,7 @@ public class NotificationController {
         NotificationDTO notification = notificationService.createNotification(request, sendAccountId);
         return ApiResponse.<NotificationDTO>builder()
                 .code(HttpStatus.CREATED.value())
-                .message("Create notification successfully")
+                .message(messageUtils.getMessage("success.notification.create"))
                 .data(notification)
                 .build();
     }
@@ -46,7 +47,7 @@ public class NotificationController {
         notificationService.markAsRead(id, accountId);
         return ApiResponse.<Void>builder()
                 .code(HttpStatus.OK.value())
-                .message("Mark notification as read successfully")
+                .message(messageUtils.getMessage("success.notification.mark.read"))
                 .build();
     }
 
@@ -57,7 +58,7 @@ public class NotificationController {
         notificationService.deleteNotification(id, accountId);
         return ApiResponse.<Void>builder()
                 .code(HttpStatus.OK.value())
-                .message("Delete notification successfully")
+                .message(messageUtils.getMessage("success.notification.delete"))
                 .build();
     }
 
@@ -75,7 +76,7 @@ public class NotificationController {
         PageResponse<NotificationDTO> notifications = notificationService.getNotificationsByAccount(accountId, pageable);
         return ApiResponse.<PageResponse<NotificationDTO>>builder()
                 .code(HttpStatus.OK.value())
-                .message("Get notifications successfully")
+                .message(messageUtils.getMessage("success.notifications.get"))
                 .data(notifications)
                 .build();
     }
@@ -87,7 +88,7 @@ public class NotificationController {
         List<NotificationDTO> notifications = notificationService.getUnreadNotifications(accountId);
         return ApiResponse.<List<NotificationDTO>>builder()
                 .code(HttpStatus.OK.value())
-                .message("Get unread notifications successfully")
+                .message(messageUtils.getMessage("success.notifications.get.unread"))
                 .data(notifications)
                 .build();
     }
@@ -99,7 +100,7 @@ public class NotificationController {
         long count = notificationService.countUnreadNotifications(accountId);
         return ApiResponse.<Long>builder()
                 .code(HttpStatus.OK.value())
-                .message("Count unread notifications successfully")
+                .message(messageUtils.getMessage("success.notifications.count.unread"))
                 .data(count)
                 .build();
     }
@@ -111,7 +112,7 @@ public class NotificationController {
         notificationService.markAllAsRead(accountId);
         return ApiResponse.<Void>builder()
                 .code(HttpStatus.OK.value())
-                .message("Marked all notifications as read successfully")
+                .message(messageUtils.getMessage("success.notification.mark.all.read"))
                 .build();
     }
 }

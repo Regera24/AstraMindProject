@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { Plus, Pencil, Trash2, Search } from 'lucide-react';
 import { Card, CardContent } from '../components/ui/Card.jsx';
@@ -13,16 +14,16 @@ import { FormError } from '../components/ui/FormError.jsx';
 import toast from 'react-hot-toast';
 
 // CategoryForm component - moved outside to prevent re-creation and input focus loss
-const CategoryForm = ({ formData, setFormData, onSubmit, submitLabel, isSaving, onCancel, errors = {} }) => (
+const CategoryForm = ({ formData, setFormData, onSubmit, submitLabel, isSaving, onCancel, errors = {}, t }) => (
   <form onSubmit={onSubmit} className="space-y-4">
     <div>
       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-        Name *
+        {t('categories.categoryName')} *
       </label>
       <Input
         value={formData.name}
         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-        placeholder="Enter category name"
+        placeholder={t('categories.enterCategoryName')}
         disabled={isSaving}
         className={errors.name ? 'border-red-500' : ''}
       />
@@ -31,12 +32,12 @@ const CategoryForm = ({ formData, setFormData, onSubmit, submitLabel, isSaving, 
 
     <div>
       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-        Description
+        {t('categories.categoryDescription')}
       </label>
       <textarea
         value={formData.description}
         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-        placeholder="Enter category description"
+        placeholder={t('categories.enterCategoryDescription')}
         className={`flex min-h-[80px] w-full rounded-lg border bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 ${
           errors.description ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
         }`}
@@ -47,7 +48,7 @@ const CategoryForm = ({ formData, setFormData, onSubmit, submitLabel, isSaving, 
 
     <div>
       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-        Color
+        {t('categories.categoryColor')}
       </label>
       <div className="grid grid-cols-8 gap-2">
         {CATEGORY_COLORS.map((color) => (
@@ -72,7 +73,7 @@ const CategoryForm = ({ formData, setFormData, onSubmit, submitLabel, isSaving, 
         onClick={onCancel}
         disabled={isSaving}
       >
-        Cancel
+        {t('common.cancel')}
       </Button>
       <Button type="submit" disabled={isSaving}>
         {isSaving ? <LoadingSpinner size="sm" className="mr-2" /> : null}
@@ -83,6 +84,7 @@ const CategoryForm = ({ formData, setFormData, onSubmit, submitLabel, isSaving, 
 );
 
 export function Categories() {
+  const { t } = useTranslation();
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -218,12 +220,12 @@ export function Categories() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Categories</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">Organize your tasks with categories.</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('categories.title')}</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">{t('categories.myCategories')}</p>
         </div>
         <Button onClick={() => setIsCreateModalOpen(true)}>
           <Plus className="mr-2 h-4 w-4" />
-          New Category
+          {t('categories.addCategory')}
         </Button>
       </div>
 
@@ -231,7 +233,7 @@ export function Categories() {
       <div className="relative max-w-md">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
         <Input
-          placeholder="Search categories..."
+          placeholder={t('common.search')}
           value={searchTerm}
           onChange={(e) => {
             setSearchTerm(e.target.value);
@@ -244,12 +246,12 @@ export function Categories() {
       {/* Categories Grid */}
       {loading ? (
         <div className="flex items-center justify-center h-96">
-          <LoadingSpinner size="lg" text="Loading categories..." />
+          <LoadingSpinner size="lg" text={t('common.loading')} />
         </div>
       ) : categories.length === 0 ? (
         <Card>
           <CardContent className="p-12 text-center">
-            <p className="text-gray-500 dark:text-gray-400">No categories found. Create your first category!</p>
+            <p className="text-gray-500 dark:text-gray-400">{t('categories.noCategories')}</p>
           </CardContent>
         </Card>
       ) : (
@@ -278,7 +280,7 @@ export function Categories() {
                           </p>
                         )}
                         <p className="text-xs text-gray-500 dark:text-gray-500 mt-2">
-                          {category.taskCount || 0} tasks
+                          {category.taskCount || 0} {t('tasks.title').toLowerCase()}
                         </p>
                       </div>
                     </div>
@@ -319,7 +321,7 @@ export function Categories() {
       {totalPages > 0 && (
         <div className="flex items-center justify-between">
           <div className="text-sm text-gray-600 dark:text-gray-400">
-            Page {currentPage + 1} of {totalPages}
+            {t('pagination.page')} {currentPage + 1} {t('pagination.of')} {totalPages}
           </div>
           <div className="flex space-x-2">
             <Button
@@ -327,14 +329,14 @@ export function Categories() {
               onClick={() => setCurrentPage(p => Math.max(0, p - 1))}
               disabled={currentPage === 0}
             >
-              Previous
+              {t('common.previous')}
             </Button>
             <Button
               variant="outline"
               onClick={() => setCurrentPage(p => Math.min(totalPages - 1, p + 1))}
               disabled={currentPage >= totalPages - 1}
             >
-              Next
+              {t('common.next')}
             </Button>
           </div>
         </div>
@@ -344,34 +346,36 @@ export function Categories() {
       <Modal
         isOpen={isCreateModalOpen}
         onClose={() => { setIsCreateModalOpen(false); resetForm(); }}
-        title="Create New Category"
+        title={t('categories.addCategory')}
         showCloseButton={false}
       >
         <CategoryForm 
           formData={formData}
           setFormData={setFormData}
           onSubmit={handleCreateCategory} 
-          submitLabel="Create Category"
+          submitLabel={t('common.create')}
           isSaving={isSaving}
           onCancel={handleCloseModal}
           errors={validationErrors}
+          t={t}
         />
       </Modal>
 
       <Modal
         isOpen={isEditModalOpen}
         onClose={() => { setIsEditModalOpen(false); setEditingCategory(null); resetForm(); }}
-        title="Edit Category"
+        title={t('categories.editCategory')}
         showCloseButton={false}
       >
         <CategoryForm 
           formData={formData}
           setFormData={setFormData}
           onSubmit={handleUpdateCategory} 
-          submitLabel="Update Category"
+          submitLabel={t('common.update')}
           isSaving={isSaving}
           onCancel={handleCloseModal}
           errors={validationErrors}
+          t={t}
         />
       </Modal>
 
@@ -382,12 +386,11 @@ export function Categories() {
           setIsDeleteModalOpen(false);
           setCategoryToDelete(null);
         }}
-        title="Delete Category"
+        title={t('categories.deleteCategory')}
       >
         <div className="space-y-4">
           <p className="text-gray-600 dark:text-gray-400">
-            Are you sure you want to delete <strong>{categoryToDelete?.name}</strong>?
-            This action cannot be undone.
+            {t('confirmDialog.deleteMessage')} <strong>{categoryToDelete?.name}</strong>?
           </p>
           <div className="flex justify-end gap-3">
             <Button
@@ -397,13 +400,13 @@ export function Categories() {
                 setCategoryToDelete(null);
               }}
             >
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button
               variant="danger"
               onClick={confirmDeleteCategory}
             >
-              Delete Category
+              {t('categories.deleteCategory')}
             </Button>
           </div>
         </div>

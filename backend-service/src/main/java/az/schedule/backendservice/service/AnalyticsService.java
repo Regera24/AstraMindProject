@@ -14,7 +14,8 @@ public interface AnalyticsService {
     /**
      * Get AI-powered insights separately (slower)
      * @param accountId User account ID
+     * @param language User's preferred language (e.g., "en", "vi")
      * @return AI-generated insights and suggestions
      */
-    AIInsights getAIInsights(Long accountId);
+    AIInsights getAIInsights(Long accountId, String language);
 }

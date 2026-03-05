@@ -1,7 +1,10 @@
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { Sparkles } from 'lucide-react';
 
 export function FloatingAIButton({ onClick }) {
+  const { t } = useTranslation();
+  
   return (
     <motion.button
       onClick={onClick}
@@ -48,7 +51,7 @@ export function FloatingAIButton({ onClick }) {
       
       {/* Tooltip */}
       <div className="absolute bottom-full right-0 mb-2 px-3 py-2 bg-gray-900 dark:bg-gray-700 text-white text-sm rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-        AI Schedule Suggestions
+        {t('ai.scheduleSuggestions')}
         <div className="absolute top-full right-4 -mt-1">
           <div className="border-4 border-transparent border-t-gray-900 dark:border-t-gray-700"></div>
         </div>

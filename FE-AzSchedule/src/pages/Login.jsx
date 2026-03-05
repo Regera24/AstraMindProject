@@ -2,17 +2,21 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, LogIn } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { Button } from '../components/ui/Button.jsx';
 import { Input } from '../components/ui/Input.jsx';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/Card.jsx';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner.jsx';
 import { FormError } from '../components/ui/FormError.jsx';
+import { LanguageSwitcher } from '../components/LanguageSwitcher.jsx';
 import { validateLogin } from '../utils/validation.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { getGoogleAuthUrl } from '../config/oauth.js';
 import toast from 'react-hot-toast';
+import logo from '../assets/images/logo.png';
 
 export function Login() {
+  const { t } = useTranslation();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     username: '',
@@ -28,10 +32,10 @@ export function Login() {
     e.preventDefault();
     
     // Validate form data
-    const validation = validateLogin(formData);
+    const validation = validateLogin(formData, t);
     if (!validation.isValid) {
       setValidationErrors(validation.errors);
-      toast.error('Please fix the validation errors');
+      toast.error(t('validation.fixErrors'));
       return;
     }
     
@@ -40,10 +44,10 @@ export function Login() {
 
     try {
       await login(formData);
-      toast.success('Login successful!');
+      toast.success(t('success.loginSuccess'));
       navigate('/dashboard');
     } catch (error) {
-      const errorMessage = error.response?.data?.message || error.message || 'Login failed';
+      const errorMessage = error.response?.data?.message || error.message || t('error.loginFailed');
       toast.error(errorMessage);
     } finally {
       setIsLoading(false);
@@ -57,6 +61,11 @@ export function Login() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 to-primary-100 dark:from-gray-900 dark:to-gray-800 p-4">
+      {/* Language Switcher - Top Right */}
+      <div className="absolute top-4 right-4">
+        <LanguageSwitcher />
+      </div>
+      
       <motion.div
         initial={{ opacity: 0, y: -50 }}
         animate={{ opacity: 1, y: 0 }}
@@ -65,21 +74,29 @@ export function Login() {
       >
         <Card className="shadow-xl">
           <CardHeader className="space-y-1 text-center">
+            {/* Logo */}
+            <div className="flex justify-center mb-4">
+              <img 
+                src={logo} 
+                alt="AstraMind Logo" 
+                className="h-16 w-16 object-contain"
+              />
+            </div>
             <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary-600 to-primary-800 bg-clip-text text-transparent">
-              Welcome Back
+              {t('auth.welcomeBack')}
             </CardTitle>
-            <CardDescription>Enter your credentials to access your account</CardDescription>
+            <CardDescription>{t('auth.enterCredentials')}</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label htmlFor="username" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Username
+                  {t('auth.username')}
                 </label>
                 <Input
                   id="username"
                   type="text"
-                  placeholder="Enter your username"
+                  placeholder={t('auth.enterUsername')}
                   value={formData.username}
                   onChange={(e) => setFormData({ ...formData, username: e.target.value })}
                   disabled={isLoading}
@@ -89,13 +106,13 @@ export function Login() {
               </div>
               <div>
                 <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Password
+                  {t('auth.password')}
                 </label>
                 <div className="relative">
                   <Input
                     id="password"
                     type={showPassword ? 'text' : 'password'}
-                    placeholder="Enter your password"
+                    placeholder={t('auth.enterPassword')}
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                     disabled={isLoading}
@@ -119,12 +136,12 @@ export function Login() {
                 {isLoading ? (
                   <>
                     <LoadingSpinner size="sm" className="mr-2" />
-                    Logging in...
+                    {t('auth.loggingIn')}
                   </>
                 ) : (
                   <>
                     <LogIn className="mr-2 h-5 w-5" />
-                    Login
+                    {t('auth.login')}
                   </>
                 )}
               </Button>
@@ -137,7 +154,7 @@ export function Login() {
               </div>
               <div className="relative flex justify-center text-sm">
                 <span className="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">
-                  Or continue with
+                  {t('auth.orContinueWith')}
                 </span>
               </div>
             </div>
@@ -168,14 +185,14 @@ export function Login() {
                   d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                 />
               </svg>
-              <span className="text-gray-700 dark:text-gray-300 font-medium">Sign in with Google</span>
+              <span className="text-gray-700 dark:text-gray-300 font-medium">{t('auth.signInWithGoogle')}</span>
             </Button>
 
             <div className="text-center mt-6">
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Don't have an account?{' '}
+                {t('auth.dontHaveAccount')}{' '}
                 <Link to="/register" className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 font-medium">
-                  Register here
+                  {t('auth.registerHere')}
                 </Link>
               </p>
             </div>

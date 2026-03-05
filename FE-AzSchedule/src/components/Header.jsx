@@ -1,13 +1,17 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Menu, X, Sun, Moon, User, LogOut, Settings } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { useTheme } from '../contexts/ThemeContext.jsx';
 import { Button } from './ui/Button.jsx';
 import { Menu as HeadlessMenu } from '@headlessui/react';
 import { NotificationDropdown } from './NotificationDropdown.jsx';
+import { LanguageSwitcher } from './LanguageSwitcher.jsx';
+import logo from '../assets/images/logo.png';
 
 export function Header({ onMobileMenuToggle }) {
+  const { t } = useTranslation();
   const { user, logout } = useAuth();
   const { isDark, toggleTheme } = useTheme();
 
@@ -25,7 +29,12 @@ export function Header({ onMobileMenuToggle }) {
             >
               <Menu className="h-5 w-5" />
             </Button>
-            <Link to="/dashboard" className="ml-2 lg:ml-0">
+            <Link to="/" className="ml-2 lg:ml-0 flex items-center space-x-2">
+              <img 
+                src={logo} 
+                alt="AstraMind Logo" 
+                className="h-8 w-8 object-contain"
+              />
               <h1 className="text-xl font-bold text-gray-900 dark:text-white">
                 AstraMind
               </h1>
@@ -34,6 +43,9 @@ export function Header({ onMobileMenuToggle }) {
 
           {/* Right side */}
           <div className="flex items-center space-x-2">
+            {/* Language Switcher */}
+            <LanguageSwitcher />
+            
             {/* Theme toggle */}
             <Button
               variant="ghost"
@@ -49,7 +61,9 @@ export function Header({ onMobileMenuToggle }) {
             </Button>
 
             {/* Notification Dropdown */}
-            <NotificationDropdown />
+            <div data-tutorial="notifications">
+              <NotificationDropdown />
+            </div>
 
             {/* User menu */}
             <HeadlessMenu as="div" className="relative">
@@ -81,7 +95,7 @@ export function Header({ onMobileMenuToggle }) {
                         } flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300`}
                       >
                         <Settings className="h-4 w-4 mr-3" />
-                        Settings
+                        {t('header.settings')}
                       </Link>
                     )}
                   </HeadlessMenu.Item>
@@ -94,7 +108,7 @@ export function Header({ onMobileMenuToggle }) {
                         } flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300`}
                       >
                         <LogOut className="h-4 w-4 mr-3" />
-                        Logout
+                        {t('auth.logout')}
                       </button>
                     )}
                   </HeadlessMenu.Item>

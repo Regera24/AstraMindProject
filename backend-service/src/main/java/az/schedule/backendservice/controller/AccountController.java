@@ -4,6 +4,7 @@ import az.schedule.backendservice.dto.AccountDTO;
 import az.schedule.backendservice.dto.request.account.AccountUpdateRequest;
 import az.schedule.backendservice.dto.response.ApiResponse;
 import az.schedule.backendservice.service.AccountService;
+import az.schedule.backendservice.utils.MessageUtils;
 import az.schedule.backendservice.utils.SecurityUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/accounts")
 public class AccountController {
     private final AccountService accountService;
+    private final MessageUtils messageUtils;
 
     @Operation(summary = "Get current account", description = "Get the currently authenticated user's account information")
     @GetMapping("/me")
@@ -26,7 +28,7 @@ public class AccountController {
         AccountDTO account = accountService.getCurrentAccount();
         return ApiResponse.<AccountDTO>builder()
                 .code(HttpStatus.OK.value())
-                .message("Get current account successfully")
+                .message(messageUtils.getMessage("success.account.get.current"))
                 .data(account)
                 .build();
     }
@@ -37,7 +39,7 @@ public class AccountController {
         AccountDTO account = accountService.getAccountById(id);
         return ApiResponse.<AccountDTO>builder()
                 .code(HttpStatus.OK.value())
-                .message("Get account successfully")
+                .message(messageUtils.getMessage("success.account.get"))
                 .data(account)
                 .build();
     }
@@ -49,7 +51,7 @@ public class AccountController {
         AccountDTO account = accountService.updateAccount(accountId, request);
         return ApiResponse.<AccountDTO>builder()
                 .code(HttpStatus.OK.value())
-                .message("Update account successfully")
+                .message(messageUtils.getMessage("success.account.update"))
                 .data(account)
                 .build();
     }
@@ -62,7 +64,7 @@ public class AccountController {
         AccountDTO account = accountService.updateAccount(id, request);
         return ApiResponse.<AccountDTO>builder()
                 .code(HttpStatus.OK.value())
-                .message("Update account successfully")
+                .message(messageUtils.getMessage("success.account.update"))
                 .data(account)
                 .build();
     }

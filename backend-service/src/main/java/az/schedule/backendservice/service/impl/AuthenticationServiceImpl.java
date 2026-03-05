@@ -25,6 +25,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -34,6 +35,7 @@ import java.security.SecureRandom;
 import java.text.ParseException;
 import java.time.Instant;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -238,13 +240,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public AuthenticationResponse outboundAuthenticate(String code) {
         try {
-            // Build form parameters for Google OAuth2 token exchange
             Map<String, String> formParams = new java.util.HashMap<>();
             formParams.put("code", code);
             formParams.put("client_id", googleClientId);
             formParams.put("client_secret", googleClientSecret);
             formParams.put("redirect_uri", googleRedirectUri);
             formParams.put("grant_type", "authorization_code");
+            log.info("GG param:" + formParams.toString());
             
             OutboundAuthenticationResponse tokenResponse = outboundGoogleClient.exchangeToken(formParams);
 
@@ -252,30 +254,33 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             
             log.info("Google OAuth2 login attempt for email: {}", userInfo.getEmail());
 
-            Account account = accountRepository.findByEmail(userInfo.getEmail())
-                    .orElseGet(() -> {
-                        log.info("Creating new account for Google user: {}", userInfo.getEmail());
-                        
-                        Account newAccount = new Account();
-                        newAccount.setEmail(userInfo.getEmail());
-                        newAccount.setFullName(userInfo.getName());
-                        newAccount.setUsername(generateUsernameFromEmail(userInfo.getEmail()));
-                        newAccount.setPassword(passwordEncoder.encode(java.util.UUID.randomUUID().toString())); // Random password
-                        newAccount.setIsActive(true);
-                        newAccount.setAvatarUrl(userInfo.getPicture());
-                        
-                        Role userRole = roleRepository.findByCode("USER")
-                                .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
-                        newAccount.setRole(userRole);
-                        
-                        return accountRepository.save(newAccount);
-                    });
+            Account account;
+            try {
+                account = accountRepository.findByEmail(userInfo.getEmail())
+                        .orElseGet(() -> {
+                            Account newAccount = new Account();
+                            newAccount.setEmail(userInfo.getEmail());
+                            newAccount.setFullName(userInfo.getName());
+                            newAccount.setUsername(generateUsernameFromEmail(userInfo.getEmail()));
+                            newAccount.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
+                            newAccount.setIsActive(true);
+                            newAccount.setAvatarUrl(userInfo.getPicture());
+
+                            Role userRole = roleRepository.findByCode("USER")
+                                    .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
+                            newAccount.setRole(userRole);
+
+                            return accountRepository.save(newAccount);
+                        });
+            } catch (DataIntegrityViolationException ex) {
+                account = accountRepository.findByEmail(userInfo.getEmail())
+                        .orElseThrow(() -> ex);
+            }
 
             if (Boolean.FALSE.equals(account.getIsActive())) {
                 throw new AppException(ErrorCode.ACCOUNT_DISABLED);
             }
 
-            // Generate JWT token
             String token = jwtService.generateToken(account, TokenType.ACCESS_TOKEN);
             
             return AuthenticationResponse.builder()
@@ -294,7 +299,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         String username = baseUsername;
         int counter = 1;
         
-        // Ensure username is unique
         while (accountRepository.existsByUsername(username)) {
             username = baseUsername + counter;
             counter++;

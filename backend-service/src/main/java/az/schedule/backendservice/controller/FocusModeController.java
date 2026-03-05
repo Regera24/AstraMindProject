@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Focus Mode API", description = "Endpoints for Focus Mode settings and website blocking")
 public class FocusModeController {
     private final FocusModeService focusModeService;
+    private final az.schedule.backendservice.utils.MessageUtils messageUtils;
     
     @Operation(summary = "Get focus mode settings", description = "Get current user's focus mode settings including blocked websites and Pomodoro configuration")
     @GetMapping("/settings")
@@ -26,7 +27,7 @@ public class FocusModeController {
         FocusModeSettingsDTO settings = focusModeService.getSettings(accountId);
         return ApiResponse.<FocusModeSettingsDTO>builder()
                 .code(HttpStatus.OK.value())
-                .message("Focus mode settings retrieved successfully")
+                .message(messageUtils.getMessage("success.focus.mode.get"))
                 .data(settings)
                 .build();
     }
@@ -38,7 +39,7 @@ public class FocusModeController {
         FocusModeSettingsDTO settings = focusModeService.updateSettings(request, accountId);
         return ApiResponse.<FocusModeSettingsDTO>builder()
                 .code(HttpStatus.OK.value())
-                .message("Focus mode settings updated successfully")
+                .message(messageUtils.getMessage("success.focus.mode.update"))
                 .data(settings)
                 .build();
     }

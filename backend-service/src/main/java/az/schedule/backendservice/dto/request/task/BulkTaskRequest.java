@@ -15,9 +15,9 @@ import java.util.List;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class BulkTaskRequest {
-    @NotEmpty(message = "Task IDs cannot be empty")
+    @NotEmpty(message = "{validation.task.ids.required}")
     List<Long> taskIds;
     
-    @NotNull(message = "Status is required")
+    @NotNull(message = "{validation.status.required}")
     TaskStatus status;
 }

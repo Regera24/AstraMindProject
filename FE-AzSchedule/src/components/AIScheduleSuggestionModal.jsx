@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Lightbulb, TrendingUp, AlertCircle, CheckCircle2, Calendar, Clock, Sparkles } from 'lucide-react';
 import { Modal } from './ui/Modal.jsx';
@@ -10,6 +11,7 @@ import { getErrorMessage } from '../utils/errorHandler.js';
 import toast from 'react-hot-toast';
 
 export function AIScheduleSuggestionModal({ isOpen, onClose }) {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [suggestions, setSuggestions] = useState(null);
   const [selectedSuggestion, setSelectedSuggestion] = useState(null);
@@ -59,8 +61,8 @@ export function AIScheduleSuggestionModal({ isOpen, onClose }) {
             <Sparkles className="h-5 w-5 text-white" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">AI Schedule Optimization</h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Intelligent suggestions for this month</p>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white">{t('ai.scheduleOptimization')}</h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400">{t('ai.intelligentSuggestions')}</p>
           </div>
         </div>
       }
@@ -70,7 +72,7 @@ export function AIScheduleSuggestionModal({ isOpen, onClose }) {
       {loading ? (
         <div className="flex flex-col items-center justify-center py-12">
           <LoadingSpinner size="lg" />
-          <p className="mt-4 text-sm text-gray-600 dark:text-gray-400">Analyzing your schedule...</p>
+          <p className="mt-4 text-sm text-gray-600 dark:text-gray-400">{t('ai.analyzingSchedule')}</p>
         </div>
       ) : suggestions ? (
         <div className="space-y-6">
@@ -79,7 +81,7 @@ export function AIScheduleSuggestionModal({ isOpen, onClose }) {
             <div className="flex items-start gap-3">
               <Lightbulb className="h-5 w-5 text-purple-600 dark:text-purple-400 mt-0.5 flex-shrink-0" />
               <div className="flex-1">
-                <h3 className="font-semibold text-purple-900 dark:text-purple-100 mb-1">Summary</h3>
+                <h3 className="font-semibold text-purple-900 dark:text-purple-100 mb-1">{t('ai.summary')}</h3>
                 <p className="text-sm text-purple-700 dark:text-purple-300">{suggestions.summary}</p>
               </div>
             </div>
@@ -90,7 +92,7 @@ export function AIScheduleSuggestionModal({ isOpen, onClose }) {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">Total Tasks</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">{t('ai.totalTasks')}</span>
                   <Calendar className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                 </div>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">{suggestions.analysis.totalTasks}</p>
@@ -98,7 +100,7 @@ export function AIScheduleSuggestionModal({ isOpen, onClose }) {
               
               <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">Overdue</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">{t('ai.overdue')}</span>
                   <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
                 </div>
                 <p className="text-2xl font-bold text-red-600 dark:text-red-400">{suggestions.analysis.overdueTasks}</p>
@@ -106,7 +108,7 @@ export function AIScheduleSuggestionModal({ isOpen, onClose }) {
               
               <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">High Priority</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">{t('ai.highPriority')}</span>
                   <TrendingUp className="h-4 w-4 text-orange-600 dark:text-orange-400" />
                 </div>
                 <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">{suggestions.analysis.highPriorityTasks}</p>
@@ -119,7 +121,7 @@ export function AIScheduleSuggestionModal({ isOpen, onClose }) {
             <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
               <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2 flex items-center gap-2">
                 <TrendingUp className="h-4 w-4" />
-                Productivity Pattern
+                {t('ai.productivityPattern')}
               </h4>
               <p className="text-sm text-blue-700 dark:text-blue-300">{suggestions.analysis.productivityPattern}</p>
             </div>
@@ -130,7 +132,7 @@ export function AIScheduleSuggestionModal({ isOpen, onClose }) {
             <div>
               <h4 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
                 <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
-                Recommendations
+                {t('ai.recommendations')}
               </h4>
               <div className="space-y-2">
                 {suggestions.analysis.recommendations.map((rec, index) => (
@@ -153,7 +155,7 @@ export function AIScheduleSuggestionModal({ isOpen, onClose }) {
             <div>
               <h4 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
                 <Sparkles className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-                Suggested Schedule Changes ({suggestions.suggestions.length})
+                {t('ai.suggestedChanges')} ({suggestions.suggestions.length})
               </h4>
               <div className="space-y-3 max-h-96 overflow-y-auto">
                 {suggestions.suggestions.map((suggestion, index) => (
@@ -176,7 +178,7 @@ export function AIScheduleSuggestionModal({ isOpen, onClose }) {
                         <div className="flex items-center gap-2 mb-2">
                           <h5 className="font-semibold text-gray-900 dark:text-white">{suggestion.taskTitle}</h5>
                           <Badge variant="outline" className="text-xs">
-                            Score: {suggestion.priorityScore}
+                            {t('ai.score')}: {suggestion.priorityScore}
                           </Badge>
                         </div>
                         
@@ -185,10 +187,10 @@ export function AIScheduleSuggestionModal({ isOpen, onClose }) {
                             <Clock className="h-4 w-4 text-gray-400 mt-0.5 flex-shrink-0" />
                             <div className="flex-1">
                               <p className="text-gray-600 dark:text-gray-400">
-                                <span className="font-medium">Current:</span> {suggestion.currentSchedule}
+                                <span className="font-medium">{t('ai.current')}:</span> {suggestion.currentSchedule}
                               </p>
                               <p className="text-purple-600 dark:text-purple-400 mt-1">
-                                <span className="font-medium">Suggested:</span> {suggestion.suggestedSchedule}
+                                <span className="font-medium">{t('ai.suggested')}:</span> {suggestion.suggestedSchedule}
                               </p>
                             </div>
                           </div>
@@ -203,7 +205,7 @@ export function AIScheduleSuggestionModal({ isOpen, onClose }) {
                               className="mt-3 pt-3 border-t border-purple-200 dark:border-purple-800"
                             >
                               <p className="text-sm text-gray-700 dark:text-gray-300">
-                                <span className="font-medium text-purple-600 dark:text-purple-400">Reason:</span> {suggestion.reason}
+                                <span className="font-medium text-purple-600 dark:text-purple-400">{t('ai.reason')}:</span> {suggestion.reason}
                               </p>
                             </motion.div>
                           )}
@@ -221,7 +223,7 @@ export function AIScheduleSuggestionModal({ isOpen, onClose }) {
             <div className="text-center py-8">
               <CheckCircle2 className="h-16 w-16 text-green-500 mx-auto mb-3" />
               <p className="text-gray-600 dark:text-gray-400">
-                Your schedule is already optimized! No changes needed.
+                {t('ai.scheduleOptimized')}
               </p>
             </div>
           )}
@@ -229,18 +231,18 @@ export function AIScheduleSuggestionModal({ isOpen, onClose }) {
           {/* Actions */}
           <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
             <Button variant="outline" onClick={handleRefresh}>
-              Refresh Analysis
+              {t('ai.refreshAnalysis')}
             </Button>
             <Button onClick={handleClose}>
-              Close
+              {t('common.close')}
             </Button>
           </div>
         </div>
       ) : (
         <div className="text-center py-8">
-          <p className="text-gray-600 dark:text-gray-400">Failed to load suggestions. Please try again.</p>
+          <p className="text-gray-600 dark:text-gray-400">{t('ai.failedToLoad')}</p>
           <Button onClick={handleRefresh} className="mt-4">
-            Retry
+            {t('ai.retry')}
           </Button>
         </div>
       )}

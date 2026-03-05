@@ -5,10 +5,13 @@ import { ThemeProvider } from './contexts/ThemeContext.jsx';
 import { AuthProvider, useAuth } from './contexts/AuthContext.jsx';
 import { LoadingProvider } from './contexts/LoadingContext.jsx';
 import { NotificationProvider } from './contexts/NotificationContext.jsx';
+import { TutorialProvider } from './contexts/TutorialContext.jsx';
+import { TutorialOverlay } from './components/TutorialOverlay.jsx';
 import { Layout } from './components/Layout.jsx';
 import { LoadingSpinner } from './components/ui/LoadingSpinner.jsx';
 import { ProtectedRoute } from './components/ProtectedRoute.jsx';
 import { AdminProtectedRoute } from './components/AdminProtectedRoute.jsx';
+import { SnowEffect } from './components/SnowEffect.jsx';
 
 // Lazy load pages
 const Landing = lazy(() => import('./pages/Landing.jsx').then(module => ({ default: module.Landing })));
@@ -21,7 +24,9 @@ const Categories = lazy(() => import('./pages/Categories.jsx').then(module => ({
 const Analytics = lazy(() => import('./pages/Analytics.jsx'));
 const Notifications = lazy(() => import('./pages/Notifications.jsx').then(module => ({ default: module.Notifications })));
 const Settings = lazy(() => import('./pages/Settings.jsx').then(module => ({ default: module.Settings })));
+const Subscription = lazy(() => import('./pages/Subscription.jsx').then(module => ({ default: module.Subscription })));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard.jsx').then(module => ({ default: module.AdminDashboard })));
+const Documentation = lazy(() => import('./pages/Documentation.jsx').then(module => ({ default: module.Documentation })));
 
 // Public Route Component (redirect to dashboard if logged in)
 function PublicRoute({ children }) {
@@ -44,90 +49,95 @@ function PublicRoute({ children }) {
 
 function AppContent() {
   return (
-    <Routes>
-      {/* Landing Page - Public */}
-      <Route
-        path="/"
-        element={
-          <Suspense fallback={<LoadingSpinner size="lg" />}>
-            <Landing />
-          </Suspense>
-        }
-      />
-
-      {/* Auth routes */}
-      <Route
-        path="/login"
-        element={
-          <PublicRoute>
+    <>
+      <TutorialOverlay />
+      <Routes>
+        {/* Landing Page - Public */}
+        <Route
+          path="/"
+          element={
             <Suspense fallback={<LoadingSpinner size="lg" />}>
-              <Login />
+              <Landing />
             </Suspense>
-          </PublicRoute>
-        }
-      />
-      <Route
-        path="/register"
-        element={
-          <PublicRoute>
-            <Suspense fallback={<LoadingSpinner size="lg" />}>
-              <Register />
-            </Suspense>
-          </PublicRoute>
-        }
-      />
-      {/* OAuth Callback Route */}
-      <Route
-        path="/oauth/callback"
-        element={
-          <Suspense fallback={<LoadingSpinner size="lg" />}>
-            <OAuthCallback />
-          </Suspense>
-        }
-      />
+          }
+        />
 
-      {/* Admin routes */}
-      <Route
-        path="/admin"
-        element={
-          <AdminProtectedRoute>
-            <Layout>
+        {/* Auth routes */}
+        <Route
+          path="/login"
+          element={
+            <PublicRoute>
               <Suspense fallback={<LoadingSpinner size="lg" />}>
-                <AdminDashboard />
+                <Login />
               </Suspense>
-            </Layout>
-          </AdminProtectedRoute>
-        }
-      />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/register"
+          element={
+            <PublicRoute>
+              <Suspense fallback={<LoadingSpinner size="lg" />}>
+                <Register />
+              </Suspense>
+            </PublicRoute>
+          }
+        />
+        {/* OAuth Callback Route */}
+        <Route
+          path="/oauth/callback"
+          element={
+            <Suspense fallback={<LoadingSpinner size="lg" />}>
+              <OAuthCallback />
+            </Suspense>
+          }
+        />
 
-      {/* Protected routes */}
-      <Route
-        path="/*"
-        element={
-          <ProtectedRoute>
-            <Layout>
-              <Suspense
-                fallback={
-                  <div className="flex items-center justify-center h-96">
-                    <LoadingSpinner size="lg" />
-                  </div>
-                }
-              >
-                <Routes>
-                  <Route path="/dashboard" element={<Dashboard />} />
-                  <Route path="/tasks" element={<Tasks />} />
-                  <Route path="/categories" element={<Categories />} />
-                  <Route path="/analytics" element={<Analytics />} />
-                  <Route path="/notifications" element={<Notifications />} />
-                  <Route path="/settings" element={<Settings />} />
-                  <Route path="*" element={<Navigate to="/dashboard" replace />} />
-                </Routes>
-              </Suspense>
-            </Layout>
-          </ProtectedRoute>
-        }
-      />
-    </Routes>
+        {/* Admin routes */}
+        <Route
+          path="/admin"
+          element={
+            <AdminProtectedRoute>
+              <Layout>
+                <Suspense fallback={<LoadingSpinner size="lg" />}>
+                  <AdminDashboard />
+                </Suspense>
+              </Layout>
+            </AdminProtectedRoute>
+          }
+        />
+
+        {/* Protected routes */}
+        <Route
+          path="/*"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <Suspense
+                  fallback={
+                    <div className="flex items-center justify-center h-96">
+                      <LoadingSpinner size="lg" />
+                    </div>
+                  }
+                >
+                  <Routes>
+                    <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/tasks" element={<Tasks />} />
+                    <Route path="/categories" element={<Categories />} />
+                    <Route path="/analytics" element={<Analytics />} />
+                    <Route path="/notifications" element={<Notifications />} />
+                    <Route path="/subscription" element={<Subscription />} />
+                    <Route path="/docs" element={<Documentation />} />
+                    <Route path="/settings" element={<Settings />} />
+                    <Route path="*" element={<Navigate to="/dashboard" replace />} />
+                  </Routes>
+                </Suspense>
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+      </Routes>
+    </>
   );
 }
 
@@ -137,7 +147,11 @@ export function App() {
       <ThemeProvider>
         <LoadingProvider>
           <AuthProvider>
-            <NotificationProvider>
+            <TutorialProvider>
+              <NotificationProvider>
+              {/* Hiệu ứng tuyết rơi */}
+              <SnowEffect snowflakeCount={50} enabled={true} />
+              
               <Toaster
                 position="top-right"
                 toastOptions={{
@@ -163,7 +177,8 @@ export function App() {
                 }}
               />
               <AppContent />
-            </NotificationProvider>
+              </NotificationProvider>
+            </TutorialProvider>
           </AuthProvider>
         </LoadingProvider>
       </ThemeProvider>

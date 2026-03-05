@@ -1,13 +1,16 @@
 import { createContext, useContext, useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { countUnreadNotifications, getNotifications, markNotificationAsRead, markAllAsRead } from '../services/notificationService';
 import { useAuth } from './AuthContext';
 import { Stomp } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import toast from 'react-hot-toast';
+import { getNotificationTitle, getNotificationMessage, getNotificationIcon } from '../utils/notificationUtils';
 
 const NotificationContext = createContext(undefined);
 
 export function NotificationProvider({ children }) {
+  const { t } = useTranslation();
   const { isLoggedIn, user } = useAuth(); 
   const [unreadCount, setUnreadCount] = useState(0);
   const [notifications, setNotifications] = useState([]);
@@ -84,7 +87,9 @@ export function NotificationProvider({ children }) {
       fetchUnreadCount();
       fetchNotifications();
       
-      const socket = new SockJS('http://localhost:8080/ws'); // URL từ WebSocketConfig
+      // Lấy base URL từ environment variable, fallback về localhost cho dev
+      const wsBaseUrl = import.meta.env.VITE_WS_BASE_URL || 'http://localhost:8080';
+      const socket = new SockJS(`${wsBaseUrl}/ws`);
       const client = Stomp.over(socket);
 
       client.debug = () => {}; 
@@ -99,14 +104,19 @@ export function NotificationProvider({ children }) {
             try {
               const notification = JSON.parse(message.body);
               
+              // Get translated title and message using utility functions
+              const translatedTitle = getNotificationTitle(notification.type, notification.title, t);
+              const translatedMessage = getNotificationMessage(notification.type, notification.message, t);
+              const icon = getNotificationIcon(notification.type);
+              
               toast.success(
-                (t) => (
-                  <div onClick={() => toast.dismiss(t.id)}>
-                    <p className="font-bold">{notification.title}</p>
-                    <p>{notification.message}</p>
+                (toastObj) => (
+                  <div onClick={() => toast.dismiss(toastObj.id)} className="cursor-pointer">
+                    <p className="font-bold">{translatedTitle}</p>
+                    <p className="text-sm">{translatedMessage}</p>
                   </div>
                 ), { 
-                  icon: '⏰',
+                  icon: icon,
                   duration: 10000 
                 }
               );
@@ -114,7 +124,7 @@ export function NotificationProvider({ children }) {
               setUnreadCount(prev => prev + 1);
               fetchNotifications();
             } catch (e) {
-              console.error("Lỗi khi parse thông báo WebSocket:", e);
+              console.error("Error parsing WebSocket notification:", e);
             }
           });
         },

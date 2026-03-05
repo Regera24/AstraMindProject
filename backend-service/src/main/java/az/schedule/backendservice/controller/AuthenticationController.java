@@ -22,6 +22,7 @@ import java.text.ParseException;
 @RequestMapping("/api/v1/auth")
 public class AuthenticationController {
     private final AuthenticationService authenticationService;
+    private final az.schedule.backendservice.utils.MessageUtils messageUtils;
 
     @Operation(
             summary = "User login",
@@ -35,7 +36,7 @@ public class AuthenticationController {
                 authenticationService.authenticate(authenticationRequest, response);
         return ApiResponse.<AuthenticationResponse>builder()
                 .code(HttpStatus.OK.value())
-                .message("Login successfully")
+                .message(messageUtils.getMessage("success.login"))
                 .data(authenticationResponse)
                 .build();
     }
@@ -48,7 +49,7 @@ public class AuthenticationController {
     public ApiResponse<AccountCreationResponse> register(@RequestBody @Valid AccountCreationRequest request) {
         AccountCreationResponse response = authenticationService.createAccount(request);
         return ApiResponse.<AccountCreationResponse>builder()
-                .message("Created account successfully")
+                .message(messageUtils.getMessage("success.register"))
                 .code(HttpStatus.CREATED.value())
                 .data(response)
                 .build();
@@ -63,7 +64,7 @@ public class AuthenticationController {
         AuthenticationResponse authenticationResponse = authenticationService.refreshToken(request);
         return ApiResponse.<AuthenticationResponse>builder()
                 .code(HttpStatus.OK.value())
-                .message("Refresh token successfully")
+                .message(messageUtils.getMessage("success.token.refresh"))
                 .data(authenticationResponse)
                 .build();
     }
@@ -78,7 +79,7 @@ public class AuthenticationController {
         IntrospectResponse response = authenticationService.introspect(request);
         return ApiResponse.<IntrospectResponse>builder()
                 .code(HttpStatus.OK.value())
-                .message("Introspect token successfully")
+                .message(messageUtils.getMessage("success.token.refresh"))
                 .data(response)
                 .build();
     }
@@ -93,7 +94,7 @@ public class AuthenticationController {
         UniqueInformationCheckResponse response = authenticationService.checkUniqueInformation(request);
         return ApiResponse.<UniqueInformationCheckResponse>builder()
                 .code(HttpStatus.OK.value())
-                .message("Check unique information successfully")
+                .message(messageUtils.getMessage("success.auth.check.unique"))
                 .data(response)
                 .build();
     }
@@ -107,7 +108,7 @@ public class AuthenticationController {
         SendOTPResponse response = authenticationService.sendOTP(key);
         return ApiResponse.<SendOTPResponse>builder()
                 .code(HttpStatus.OK.value())
-                .message("Send OTP successfully")
+                .message(messageUtils.getMessage("success.otp.send"))
                 .data(response)
                 .build();
     }
@@ -121,7 +122,7 @@ public class AuthenticationController {
         boolean isValid = authenticationService.checkOTP(request);
         return ApiResponse.<Boolean>builder()
                 .code(HttpStatus.OK.value())
-                .message("Check OTP successfully")
+                .message(messageUtils.getMessage("success.auth.otp.check"))
                 .data(isValid)
                 .build();
     }
@@ -135,7 +136,7 @@ public class AuthenticationController {
         authenticationService.changePassword(request);
         return ApiResponse.<Void>builder()
                 .code(HttpStatus.OK.value())
-                .message("Change password successfully")
+                .message(messageUtils.getMessage("success.password.change"))
                 .build();
     }
 
@@ -148,7 +149,7 @@ public class AuthenticationController {
         AuthenticationResponse response = authenticationService.outboundAuthenticate(code);
         return ApiResponse.<AuthenticationResponse>builder()
                 .code(HttpStatus.OK.value())
-                .message("OAuth2 authentication successfully")
+                .message(messageUtils.getMessage("success.auth.oauth2"))
                 .data(response)
                 .build();
     }

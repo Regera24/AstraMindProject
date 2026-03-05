@@ -1,11 +1,12 @@
 const CONFIG = {
-  API_BASE_URL: 'http://localhost:8080/api/v1',
+  API_BASE_URL: 'https://astramind.io.vn/api/v1',
   
   ENDPOINTS: {
     // Auth
     LOGIN: '/auth/login',
     LOGOUT: '/auth/logout',
     REFRESH_TOKEN: '/auth/refresh-token',
+    OAUTH_AUTHENTICATE: '/auth/outbound/authentication',
     
     // Account
     CURRENT_USER: '/accounts/me',

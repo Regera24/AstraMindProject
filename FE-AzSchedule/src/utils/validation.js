@@ -1,28 +1,31 @@
 /**
  * Frontend validation utilities
  * Matches backend validation rules
+ * 
+ * Note: Pass the t() function from useTranslation to get localized error messages
  */
 
 /**
  * Validate task form data
  * @param {Object} data - Task form data
+ * @param {Function} t - Translation function from useTranslation
  * @returns {Object} - { isValid: boolean, errors: {} }
  */
-export const validateTask = (data) => {
+export const validateTask = (data, t) => {
   const errors = {};
 
   // Title validation
   if (!data.title || data.title.trim() === '') {
-    errors.title = 'Title is required';
+    errors.title = t ? t('validation.required') : 'Title is required';
   } else if (data.title.trim().length < 3) {
-    errors.title = 'Title must be at least 3 characters';
+    errors.title = t ? t('tasks.taskTitle') + ' ' + t('validation.usernameMinLength') : 'Title must be at least 3 characters';
   } else if (data.title.length > 200) {
-    errors.title = 'Title must not exceed 200 characters';
+    errors.title = t ? t('validation.description.size', { max: 200 }) : 'Title must not exceed 200 characters';
   }
 
   // Description validation
   if (data.description && data.description.length > 2000) {
-    errors.description = 'Description must not exceed 2000 characters';
+    errors.description = t ? t('validation.description.size', { max: 2000 }) : 'Description must not exceed 2000 characters';
   }
 
   // Date validation
@@ -30,7 +33,7 @@ export const validateTask = (data) => {
     const start = new Date(data.startTime);
     const end = new Date(data.endTime);
     if (end <= start) {
-      errors.endTime = 'End time must be after start time';
+      errors.endTime = 'End time must be after start time'; // Add to translation files if needed
     }
   }
 
@@ -43,14 +46,15 @@ export const validateTask = (data) => {
 /**
  * Validate category form data
  * @param {Object} data - Category form data
+ * @param {Function} t - Translation function from useTranslation
  * @returns {Object} - { isValid: boolean, errors: {} }
  */
-export const validateCategory = (data) => {
+export const validateCategory = (data, t) => {
   const errors = {};
 
   // Name validation
   if (!data.name || data.name.trim() === '') {
-    errors.name = 'Name is required';
+    errors.name = t ? t('validation.required') : 'Name is required';
   } else if (data.name.trim().length < 2) {
     errors.name = 'Name must be at least 2 characters';
   } else if (data.name.length > 50) {
@@ -76,16 +80,17 @@ export const validateCategory = (data) => {
 /**
  * Validate registration form data
  * @param {Object} data - Registration form data
+ * @param {Function} t - Translation function from useTranslation
  * @returns {Object} - { isValid: boolean, errors: {} }
  */
-export const validateRegistration = (data) => {
+export const validateRegistration = (data, t) => {
   const errors = {};
 
   // Username validation
   if (!data.username || data.username.trim() === '') {
-    errors.username = 'Username is required';
+    errors.username = t ? t('validation.usernameRequired') : 'Username is required';
   } else if (data.username.length < 3) {
-    errors.username = 'Username must be at least 3 characters';
+    errors.username = t ? t('validation.usernameMinLength') : 'Username must be at least 3 characters';
   } else if (data.username.length > 50) {
     errors.username = 'Username must not exceed 50 characters';
   } else if (!/^[a-zA-Z0-9_-]+$/.test(data.username)) {
@@ -94,7 +99,7 @@ export const validateRegistration = (data) => {
 
   // Full name validation
   if (!data.fullName || data.fullName.trim() === '') {
-    errors.fullName = 'Full name is required';
+    errors.fullName = t ? t('validation.fullNameRequired') : 'Full name is required';
   } else if (data.fullName.trim().length < 2) {
     errors.fullName = 'Full name must be at least 2 characters';
   } else if (data.fullName.length > 100) {
@@ -103,25 +108,24 @@ export const validateRegistration = (data) => {
 
   // Email validation
   if (!data.email || data.email.trim() === '') {
-    errors.email = 'Email is required';
+    errors.email = t ? t('validation.emailRequired') : 'Email is required';
   } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
-    errors.email = 'Please enter a valid email address';
+    errors.email = t ? t('validation.emailInvalid') : 'Please enter a valid email address';
   }
 
   // Password validation
   if (!data.password || data.password === '') {
-    errors.password = 'Password is required';
+    errors.password = t ? t('validation.passwordRequired') : 'Password is required';
   } else if (data.password.length < 6) {
-    errors.password = 'Password must be at least 6 characters';
+    errors.password = t ? t('validation.passwordMinLength') : 'Password must be at least 6 characters';
   } else if (data.password.length > 100) {
     errors.password = 'Password must not exceed 100 characters';
   }
 
   // Phone number validation
-  if (!data.phoneNumber || data.phoneNumber.trim() === '') {
-    errors.phoneNumber = 'Phone number is required';
-  } else if (!/^[0-9]{10,15}$/.test(data.phoneNumber.replace(/[\s-]/g, ''))) {
-    errors.phoneNumber = 'Phone number must be 10-15 digits';
+  const phone = data.phoneNumber?.trim();
+  if (phone != '' && !/^(03|05|07|08|09)\d{8}$/.test(phone.replace(/[\s-]/g, ''))) {
+    errors.phoneNumber = t ? t('validation.phoneNumberInvalid') : 'Phone number must start with 03, 05, 07, 08, or 09 and contain 10 digits';
   }
 
   return {
@@ -133,19 +137,20 @@ export const validateRegistration = (data) => {
 /**
  * Validate login form data
  * @param {Object} data - Login form data
+ * @param {Function} t - Translation function from useTranslation
  * @returns {Object} - { isValid: boolean, errors: {} }
  */
-export const validateLogin = (data) => {
+export const validateLogin = (data, t) => {
   const errors = {};
 
   // Username validation
   if (!data.username || data.username.trim() === '') {
-    errors.username = 'Username is required';
+    errors.username = t ? t('validation.usernameRequired') : 'Username is required';
   }
 
   // Password validation
   if (!data.password || data.password === '') {
-    errors.password = 'Password is required';
+    errors.password = t ? t('validation.passwordRequired') : 'Password is required';
   }
 
   return {
@@ -157,9 +162,10 @@ export const validateLogin = (data) => {
 /**
  * Validate account update form data
  * @param {Object} data - Account update form data
+ * @param {Function} t - Translation function from useTranslation
  * @returns {Object} - { isValid: boolean, errors: {} }
  */
-export const validateAccountUpdate = (data) => {
+export const validateAccountUpdate = (data, t) => {
   const errors = {};
 
   // Full name validation (optional but if provided must be valid)
@@ -174,14 +180,14 @@ export const validateAccountUpdate = (data) => {
   // Email validation (optional but if provided must be valid)
   if (data.email !== undefined && data.email !== null && data.email !== '') {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
-      errors.email = 'Please enter a valid email address';
+      errors.email = t ? t('validation.emailInvalid') : 'Please enter a valid email address';
     }
   }
 
   // Phone number validation (optional but if provided must be valid)
   if (data.phoneNumber !== undefined && data.phoneNumber !== null && data.phoneNumber !== '') {
     if (!/^[0-9]{10,15}$/.test(data.phoneNumber.replace(/[\s-]/g, ''))) {
-      errors.phoneNumber = 'Phone number must be 10-15 digits';
+      errors.phoneNumber = t ? t('validation.phoneNumberInvalid') : 'Phone number must be 10-15 digits';
     }
   }
 
@@ -194,9 +200,10 @@ export const validateAccountUpdate = (data) => {
 /**
  * Extract and format error message from API response
  * @param {Error} error - Error object from API
+ * @param {Function} t - Translation function from useTranslation
  * @returns {string|Object} - Formatted error message or field errors
  */
-export const extractApiErrors = (error) => {
+export const extractApiErrors = (error, t) => {
   if (error.response?.data?.message) {
     // Single error message
     return error.response.data.message;
@@ -211,5 +218,5 @@ export const extractApiErrors = (error) => {
     return fieldErrors;
   }
 
-  return 'An unexpected error occurred';
+  return t ? t('error.somethingWentWrong') : 'An unexpected error occurred';
 };

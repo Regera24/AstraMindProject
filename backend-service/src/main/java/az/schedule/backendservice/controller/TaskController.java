@@ -1,5 +1,6 @@
 package az.schedule.backendservice.controller;
 
+import az.schedule.backendservice.annotation.RequireSubscription;
 import az.schedule.backendservice.dto.TaskDTO;
 import az.schedule.backendservice.dto.request.task.AdvancedTaskFilterRequest;
 import az.schedule.backendservice.dto.request.task.BulkTaskRequest;
@@ -49,6 +50,7 @@ public class TaskController {
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final AccountRepository accountRepository;
+    private final az.schedule.backendservice.utils.MessageUtils messageUtils;
 
     @Operation(summary = "Create a new task", description = "Create a new task for the current user")
     @PostMapping
@@ -58,7 +60,7 @@ public class TaskController {
 
         return ApiResponse.<TaskDTO>builder()
                 .code(HttpStatus.CREATED.value())
-                .message("Create task successfully")
+                .message(messageUtils.getMessage("success.task.create"))
                 .data(task)
                 .build();
     }
@@ -72,7 +74,7 @@ public class TaskController {
         TaskDTO task = taskService.updateTask(id, request, accountId);
         return ApiResponse.<TaskDTO>builder()
                 .code(HttpStatus.OK.value())
-                .message("Update task successfully")
+                .message(messageUtils.getMessage("success.task.update"))
                 .data(task)
                 .build();
     }
@@ -84,7 +86,7 @@ public class TaskController {
         taskService.deleteTask(id, accountId);
         return ApiResponse.<Void>builder()
                 .code(HttpStatus.OK.value())
-                .message("Delete task successfully")
+                .message(messageUtils.getMessage("success.task.delete"))
                 .build();
     }
 
@@ -95,7 +97,7 @@ public class TaskController {
         TaskDTO task = taskService.getTaskById(id, accountId);
         return ApiResponse.<TaskDTO>builder()
                 .code(HttpStatus.OK.value())
-                .message("Get task successfully")
+                .message(messageUtils.getMessage("success.task.get"))
                 .data(task)
                 .build();
     }
@@ -114,7 +116,7 @@ public class TaskController {
         PageResponse<TaskDTO> tasks = taskService.getTasksByAccount(accountId, pageable);
         return ApiResponse.<PageResponse<TaskDTO>>builder()
                 .code(HttpStatus.OK.value())
-                .message("Get tasks successfully")
+                .message(messageUtils.getMessage("success.tasks.get"))
                 .data(tasks)
                 .build();
     }
@@ -134,7 +136,7 @@ public class TaskController {
         PageResponse<TaskDTO> tasks = taskService.getTasksByAccountAndStatus(accountId, status, pageable);
         return ApiResponse.<PageResponse<TaskDTO>>builder()
                 .code(HttpStatus.OK.value())
-                .message("Get tasks by status successfully")
+                .message(messageUtils.getMessage("success.tasks.get.status"))
                 .data(tasks)
                 .build();
     }
@@ -154,7 +156,7 @@ public class TaskController {
         PageResponse<TaskDTO> tasks = taskService.getTasksByAccountAndCategory(accountId, categoryId, pageable);
         return ApiResponse.<PageResponse<TaskDTO>>builder()
                 .code(HttpStatus.OK.value())
-                .message("Get tasks by category successfully")
+                .message(messageUtils.getMessage("success.tasks.get.category"))
                 .data(tasks)
                 .build();
     }
@@ -174,7 +176,7 @@ public class TaskController {
         PageResponse<TaskDTO> tasks = taskService.searchTasks(accountId, keyword, pageable);
         return ApiResponse.<PageResponse<TaskDTO>>builder()
                 .code(HttpStatus.OK.value())
-                .message("Search tasks successfully")
+                .message(messageUtils.getMessage("success.tasks.search"))
                 .data(tasks)
                 .build();
     }
@@ -188,7 +190,7 @@ public class TaskController {
         List<TaskDTO> tasks = taskService.getTasksByDateRange(accountId, start, end);
         return ApiResponse.<List<TaskDTO>>builder()
                 .code(HttpStatus.OK.value())
-                .message("Get tasks by date range successfully")
+                .message(messageUtils.getMessage("success.tasks.get.daterange"))
                 .data(tasks)
                 .build();
     }
@@ -200,7 +202,7 @@ public class TaskController {
         TaskStatisticsResponse statistics = taskService.getAccountTaskStatistics(accountId);
         return ApiResponse.<TaskStatisticsResponse>builder()
                 .code(HttpStatus.OK.value())
-                .message("Get task statistics successfully")
+                .message(messageUtils.getMessage("success.tasks.statistics"))
                 .data(statistics)
                 .build();
     }
@@ -212,7 +214,7 @@ public class TaskController {
         TaskStatisticsResponse statistics = taskService.getCategoryTaskStatistics(categoryId);
         return ApiResponse.<TaskStatisticsResponse>builder()
                 .code(HttpStatus.OK.value())
-                .message("Get category task statistics successfully")
+                .message(messageUtils.getMessage("success.tasks.statistics.category"))
                 .data(statistics)
                 .build();
     }
@@ -224,7 +226,7 @@ public class TaskController {
         BulkOperationResponse response = taskService.bulkDeleteTasks(taskIds, accountId);
         return ApiResponse.<BulkOperationResponse>builder()
                 .code(HttpStatus.OK.value())
-                .message("Bulk delete completed")
+                .message(messageUtils.getMessage("success.tasks.bulk.delete"))
                 .data(response)
                 .build();
     }
@@ -236,7 +238,7 @@ public class TaskController {
         BulkOperationResponse response = taskService.bulkUpdateTaskStatus(request, accountId);
         return ApiResponse.<BulkOperationResponse>builder()
                 .code(HttpStatus.OK.value())
-                .message("Bulk update completed")
+                .message(messageUtils.getMessage("success.tasks.bulk.update"))
                 .data(response)
                 .build();
     }
@@ -256,7 +258,7 @@ public class TaskController {
         PageResponse<TaskDTO> tasks = taskService.getTasksByAccountAndPriority(accountId, priority, pageable);
         return ApiResponse.<PageResponse<TaskDTO>>builder()
                 .code(HttpStatus.OK.value())
-                .message("Get tasks by priority successfully")
+                .message(messageUtils.getMessage("success.tasks.get.priority"))
                 .data(tasks)
                 .build();
     }
@@ -268,7 +270,7 @@ public class TaskController {
         List<TaskDTO> tasks = taskService.getOverdueTasks(accountId);
         return ApiResponse.<List<TaskDTO>>builder()
                 .code(HttpStatus.OK.value())
-                .message("Get overdue tasks successfully")
+                .message(messageUtils.getMessage("success.tasks.get.overdue"))
                 .data(tasks)
                 .build();
     }
@@ -288,7 +290,7 @@ public class TaskController {
         PageResponse<TaskDTO> tasks = taskService.advancedFilterTasks(filterRequest, accountId, pageable);
         return ApiResponse.<PageResponse<TaskDTO>>builder()
                 .code(HttpStatus.OK.value())
-                .message("Filter tasks successfully")
+                .message(messageUtils.getMessage("success.tasks.filter"))
                 .data(tasks)
                 .build();
     }
@@ -302,7 +304,7 @@ public class TaskController {
         List<TaskDTO> tasks = taskService.getTasksByWeek(accountId, weekStart);
         return ApiResponse.<List<TaskDTO>>builder()
                 .code(HttpStatus.OK.value())
-                .message("Get tasks by week successfully")
+                .message(messageUtils.getMessage("success.tasks.get.week"))
                 .data(tasks)
                 .build();
     }
@@ -316,77 +318,92 @@ public class TaskController {
         List<TaskDTO> tasks = taskService.getTasksByMonth(accountId, year, month);
         return ApiResponse.<List<TaskDTO>>builder()
                 .code(HttpStatus.OK.value())
-                .message("Get tasks by month successfully")
+                .message(messageUtils.getMessage("success.tasks.get.month"))
                 .data(tasks)
                 .build();
     }
 
     @Operation(summary = "Parse task from natural language", description = "Parse natural language input into structured task data")
+    @RequireSubscription
     @PostMapping("/ai/parse")
     public ApiResponse<ParsedTaskResponse> parseTaskFromNaturalLanguage(
-            @Valid @RequestBody NaturalLanguageTaskRequest request) {
-        ParsedTaskResponse parsedTask = aiTaskService.parseTaskFromNaturalLanguage(request);
+            @Valid @RequestBody NaturalLanguageTaskRequest request,
+            @Parameter(description = "User's preferred language (e.g., 'en', 'vi')")
+            @RequestHeader(value = "Accept-Language", defaultValue = "en") String language) {
+        ParsedTaskResponse parsedTask = aiTaskService.parseTaskFromNaturalLanguage(request, language);
         return ApiResponse.<ParsedTaskResponse>builder()
                 .code(HttpStatus.OK.value())
-                .message("Task parsed successfully from natural language")
+                .message(messageUtils.getMessage("success.ai.task.parse.nl"))
                 .data(parsedTask)
                 .build();
     }
 
     @Operation(summary = "Create task from natural language", description = "Create a task directly from natural language input")
+    @RequireSubscription
     @PostMapping("/ai/create")
     public ApiResponse<TaskDTO> createTaskFromNaturalLanguage(
-            @Valid @RequestBody NaturalLanguageTaskRequest request) {
+            @Valid @RequestBody NaturalLanguageTaskRequest request,
+            @Parameter(description = "User's preferred language (e.g., 'en', 'vi')")
+            @RequestHeader(value = "Accept-Language", defaultValue = "en") String language) {
         Long accountId = SecurityUtils.getCurrentAccountId();
-        TaskDTO task = aiTaskService.createTaskFromNaturalLanguage(request, accountId);
+        TaskDTO task = aiTaskService.createTaskFromNaturalLanguage(request, accountId, language);
         return ApiResponse.<TaskDTO>builder()
                 .code(HttpStatus.CREATED.value())
-                .message("Task created successfully from natural language")
+                .message(messageUtils.getMessage("success.ai.task.create.nl"))
                 .data(task)
                 .build();
     }
 
     @Operation(summary = "Parse tasks from image", description = "Analyze an image to extract task information")
+    @RequireSubscription
     @PostMapping(value = "/ai/parse-image", consumes = "multipart/form-data")
     public ApiResponse<ImageTaskParseResponse> parseTasksFromImage(
             @Parameter(description = "Image file (calendar, schedule, email, etc.)")
             @RequestParam("image") MultipartFile image,
             @Parameter(description = "Optional additional context")
-            @RequestParam(value = "context", required = false) String context) {
-        ImageTaskParseResponse response = aiTaskService.parseTasksFromImage(image, context);
+            @RequestParam(value = "context", required = false) String context,
+            @Parameter(description = "User's preferred language (e.g., 'en', 'vi')")
+            @RequestHeader(value = "Accept-Language", defaultValue = "en") String language) {
+        ImageTaskParseResponse response = aiTaskService.parseTasksFromImage(image, context, language);
         return ApiResponse.<ImageTaskParseResponse>builder()
                 .code(HttpStatus.OK.value())
-                .message("Image analyzed successfully")
+                .message(messageUtils.getMessage("success.ai.image.analyze"))
                 .data(response)
                 .build();
     }
 
     @Operation(summary = "Create tasks from image", description = "Extract and create tasks directly from an uploaded image")
+    @RequireSubscription
     @PostMapping(value = "/ai/create-from-image", consumes = "multipart/form-data")
     public ApiResponse<List<TaskDTO>> createTasksFromImage(
             @Parameter(description = "Image file (calendar, schedule, email, etc.)")
             @RequestParam("image") MultipartFile image,
             @Parameter(description = "Optional additional context")
-            @RequestParam(value = "context", required = false) String context) {
+            @RequestParam(value = "context", required = false) String context,
+            @Parameter(description = "User's preferred language (e.g., 'en', 'vi')")
+            @RequestHeader(value = "Accept-Language", defaultValue = "en") String language) {
         Long accountId = SecurityUtils.getCurrentAccountId();
-        List<TaskDTO> tasks = aiTaskService.createTasksFromImage(image, context, accountId);
+        List<TaskDTO> tasks = aiTaskService.createTasksFromImage(image, context, accountId, language);
         return ApiResponse.<List<TaskDTO>>builder()
                 .code(HttpStatus.CREATED.value())
-                .message(String.format("Successfully created %d task(s) from image", tasks.size()))
+                .message(messageUtils.getMessage("success.ai.tasks.create.image", tasks.size()))
                 .data(tasks)
                 .build();
     }
 
     @Operation(summary = "Get AI schedule suggestions", description = "Get AI-powered schedule optimization suggestions for a specific month")
+    @RequireSubscription
     @GetMapping("/ai/schedule-suggestions")
     public ApiResponse<ScheduleSuggestionResponse> getScheduleSuggestions(
             @Parameter(description = "Year") @RequestParam int year,
-            @Parameter(description = "Month (1-12)") @RequestParam int month) {
+            @Parameter(description = "Month (1-12)") @RequestParam int month,
+            @Parameter(description = "User's preferred language (e.g., 'en', 'vi')")
+            @RequestHeader(value = "Accept-Language", defaultValue = "en") String language) {
         Long accountId = SecurityUtils.getCurrentAccountId();
-        ScheduleSuggestionResponse suggestions = aiScheduleService.generateScheduleSuggestions(accountId, year, month);
+        ScheduleSuggestionResponse suggestions = aiScheduleService.generateScheduleSuggestions(accountId, year, month, language);
         return ApiResponse.<ScheduleSuggestionResponse>builder()
                 .code(HttpStatus.OK.value())
-                .message("Schedule suggestions generated successfully")
+                .message(messageUtils.getMessage("success.ai.schedule.suggestions"))
                 .data(suggestions)
                 .build();
     }

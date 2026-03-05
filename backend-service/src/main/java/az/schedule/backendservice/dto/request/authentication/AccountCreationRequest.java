@@ -17,28 +17,27 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class AccountCreationRequest {
-    @NotBlank(message = "Username is required")
-    @Size(min = 3, max = 50, message = "Username must be between 3 and 50 characters")
-    @Pattern(regexp = "^[a-zA-Z0-9_-]+$", message = "Username can only contain letters, numbers, underscores and hyphens")
+    @NotBlank(message = "{validation.username.required}")
+    @Size(min = 3, max = 50, message = "{validation.username.size}")
+    @Pattern(regexp = "^[a-zA-Z0-9_-]+$", message = "{validation.username.pattern}")
     String username;
 
-    @NotBlank(message = "Full name is required")
-    @Size(min = 2, max = 100, message = "Full name must be between 2 and 100 characters")
+    @NotBlank(message = "{validation.fullname.required}")
+    @Size(min = 2, max = 100, message = "{validation.fullname.size}")
     String fullName;
 
-    @NotBlank(message = "Password is required")
-    @Size(min = 6, max = 100, message = "Password must be at least 6 characters")
+    @NotBlank(message = "{validation.password.required}")
+    @Size(min = 6, max = 100, message = "{validation.password.size}")
     String password;
 
-    @NotBlank(message = "Email is required")
-    @Email(message = "Email must be valid")
+    @NotBlank(message = "{validation.email.required}")
+    @Email(message = "{validation.email.invalid}")
     String email;
 
-    @NotNull
     @PhoneConstraint
     String phoneNumber;
 
-    @NotBlank(message = "Role is required")
+    @NotBlank(message = "{validation.role.required}")
     String role;
 
     String avatar;

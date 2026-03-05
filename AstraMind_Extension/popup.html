@@ -8,7 +8,10 @@
   <!-- Google Fonts - Inter như FE-AzSchedule -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- Material Symbols -->
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
   
   <!-- Font Awesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -19,33 +22,86 @@
   <!-- Login Screen -->
   <div id="login-screen" class="screen">
     <div class="header-login">
-      <div class="logo">
-        <i class="fas fa-brain"></i>
-        <h1>AstraMind</h1>
-      </div>
+      <h1 class="logo-title">AstraMind</h1>
       <p class="tagline">Focus & Productivity Assistant</p>
     </div>
     
-    <form id="login-form" class="login-form">
-      <div class="form-group">
-        <label for="username">Username</label>
-        <input type="text" id="username" placeholder="Enter username" required>
+    <div class="login-container">
+      <div class="login-welcome">
+        <h2>Welcome back</h2>
+        <p>Please enter your details to sign in</p>
       </div>
-      <div class="form-group">
-        <label for="password">Password</label>
-        <input type="password" id="password" placeholder="Enter password" required>
+      
+      <form id="login-form" class="login-form">
+        <div class="form-group">
+          <label for="username">
+            <i class="fas fa-user"></i>
+            Username
+          </label>
+          <div class="input-with-icon">
+            <i class="fas fa-user input-icon-left"></i>
+            <input type="text" id="username" placeholder="Enter your username" required>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="password">
+            <i class="fas fa-lock"></i>
+            Password
+          </label>
+          <div class="input-with-icon">
+            <i class="fas fa-lock input-icon-left"></i>
+            <input type="password" id="password" placeholder="Enter your password" required>
+            <button type="button" class="toggle-password" id="toggle-password">
+              <i class="fas fa-eye"></i>
+            </button>
+          </div>
+        </div>
+        
+        <div class="form-footer">
+          <label class="remember-me">
+            <input type="checkbox" id="remember-me">
+            <span>Remember me</span>
+          </label>
+          <a href="#" class="forgot-password">Forgot password?</a>
+        </div>
+        
+        <button type="submit" class="btn btn-primary" id="login-btn">
+          <span class="btn-text">
+            <span>Sign In</span>
+            <i class="fas fa-arrow-right"></i>
+          </span>
+          <span class="spinner hidden">
+            <i class="fas fa-spinner fa-spin"></i>
+          </span>
+        </button>
+        
+        <div id="login-error" class="error-message hidden"></div>
+      </form>
+      
+      <!-- Divider -->
+      <div class="divider">
+        <span>Or continue with</span>
       </div>
-      <button type="submit" class="btn btn-primary" id="login-btn">
-        <span class="btn-text">
-          <i class="fas fa-sign-in-alt"></i>
-          Login
-        </span>
-        <span class="spinner hidden">
-          <i class="fas fa-spinner fa-spin"></i>
-        </span>
-      </button>
-      <div id="login-error" class="error-message hidden"></div>
-    </form>
+      
+      <!-- Social Login -->
+      <div class="social-login">
+        <button type="button" class="btn-social btn-google" id="google-login-btn">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M19.8055 10.2292C19.8055 9.55056 19.7501 8.86667 19.6306 8.19861H10.2V12.0486H15.6014C15.3773 13.2911 14.6571 14.3898 13.6025 15.0875V17.5861H16.825C18.7173 15.8444 19.8055 13.2722 19.8055 10.2292Z" fill="#4285F4"/>
+            <path d="M10.2 20C12.9 20 15.1709 19.1044 16.8286 17.5856L13.6061 15.087C12.7096 15.6969 11.5618 16.0428 10.2036 16.0428C7.59474 16.0428 5.38272 14.2828 4.58636 11.9169H1.26367V14.4922C2.96127 17.8694 6.41891 20 10.2 20Z" fill="#34A853"/>
+            <path d="M4.58182 11.9169C4.16545 10.6744 4.16545 9.33 4.58182 8.0875V5.51221H1.26364C-0.154545 8.33778 -0.154545 11.6667 1.26364 14.4922L4.58182 11.9169Z" fill="#FBBC04"/>
+            <path d="M10.2 3.95722C11.6327 3.93556 13.0145 4.47222 14.0436 5.45889L16.8909 2.60389C15.0818 0.904444 12.6818 -0.0322222 10.2 0.000555556C6.41891 0.000555556 2.96127 2.13056 1.26367 5.51222L4.58182 8.0875C5.37455 5.71722 7.59018 3.95722 10.2 3.95722Z" fill="#EA4335"/>
+          </svg>
+          <span>Google</span>
+        </button>
+      </div>
+      
+      <!-- Sign Up Link -->
+      <div class="signup-link">
+        Don't have an account? <a href="#">Sign up</a>
+      </div>
+    </div>
   </div>
 
   <!-- Main Screen -->
@@ -162,8 +218,8 @@
             <svg class="timer-svg" viewBox="0 0 200 200">
               <defs>
                 <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
-                  <stop offset="100%" style="stop-color:#2563eb;stop-opacity:1" />
+                  <stop offset="0%" style="stop-color:#f05038;stop-opacity:1" />
+                  <stop offset="100%" style="stop-color:#FF914D;stop-opacity:1" />
                 </linearGradient>
               </defs>
               <circle class="timer-bg" cx="100" cy="100" r="90"></circle>

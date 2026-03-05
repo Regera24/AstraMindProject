@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { Plus, Search, Pencil, Trash2, Filter, Sparkles, Image, Calendar, List, CheckCircle } from 'lucide-react';
 import { Card, CardContent } from '../components/ui/Card.jsx';
@@ -11,7 +12,7 @@ import { CalendarView } from '../components/CalendarView.jsx';
 import { getTasks, createTask, updateTask, deleteTask, searchTasks, getTasksByStatus, getTasksByWeek, getTasksByMonth } from '../services/taskService.js';
 import { getAllCategories } from '../services/categoryService.js';
 import { createTaskFromNaturalLanguage, createTasksFromImage } from '../services/aiService.js';
-import { TASK_STATUS, TASK_STATUS_LABELS, TASK_STATUS_COLORS, TASK_PRIORITY, TASK_PRIORITY_LABELS, TASK_PRIORITY_COLORS } from '../utils/constants.js';
+import { TASK_STATUS, TASK_STATUS_COLORS, TASK_PRIORITY, TASK_PRIORITY_COLORS, getTaskStatusLabel, getTaskPriorityLabel } from '../utils/constants.js';
 import { formatDateTime, isOverdue } from '../utils/dateUtils.js';
 import { getErrorMessage } from '../utils/errorHandler.js';
 import { validateTask } from '../utils/validation.js';
@@ -22,16 +23,16 @@ import { AIScheduleSuggestionModal } from '../components/AIScheduleSuggestionMod
 import toast from 'react-hot-toast';
 
 // TaskForm component - moved outside to prevent re-creation and input focus loss
-const TaskForm = ({ formData, setFormData, onSubmit, submitLabel, isSaving, categories, onCancel, errors = {} }) => (
+const TaskForm = ({ formData, setFormData, onSubmit, submitLabel, isSaving, categories, onCancel, errors = {}, t }) => (
   <form onSubmit={onSubmit} className="space-y-4">
     <div>
       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-        Title *
+        {t('tasks.taskTitle')} *
       </label>
       <Input
         value={formData.title}
         onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-        placeholder="Enter task title"
+        placeholder={t('tasks.enterTaskTitle')}
         disabled={isSaving}
         className={errors.title ? 'border-red-500' : ''}
       />
@@ -40,12 +41,12 @@ const TaskForm = ({ formData, setFormData, onSubmit, submitLabel, isSaving, cate
 
     <div>
       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-        Description
+        {t('tasks.taskDescription')}
       </label>
       <textarea
         value={formData.description}
         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-        placeholder="Enter task description"
+        placeholder={t('tasks.enterTaskDescription')}
         className={`flex min-h-[80px] w-full rounded-lg border bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 disabled:cursor-not-allowed disabled:opacity-50 ${
           errors.description ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
         }`}
@@ -57,7 +58,7 @@ const TaskForm = ({ formData, setFormData, onSubmit, submitLabel, isSaving, cate
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          Start Time
+          {t('tasks.taskStartDate')}
         </label>
         <Input
           type="datetime-local"
@@ -68,7 +69,7 @@ const TaskForm = ({ formData, setFormData, onSubmit, submitLabel, isSaving, cate
       </div>
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          End Time
+          {t('tasks.taskEndDate')}
         </label>
         <Input
           type="datetime-local"
@@ -82,7 +83,7 @@ const TaskForm = ({ formData, setFormData, onSubmit, submitLabel, isSaving, cate
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          Priority
+          {t('tasks.taskPriority')}
         </label>
         <select
           value={formData.priority}
@@ -90,14 +91,14 @@ const TaskForm = ({ formData, setFormData, onSubmit, submitLabel, isSaving, cate
           className="flex h-10 w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
           disabled={isSaving}
         >
-          {Object.entries(TASK_PRIORITY_LABELS).map(([value, label]) => (
-            <option key={value} value={value}>{label}</option>
+          {Object.values(TASK_PRIORITY).map((value) => (
+            <option key={value} value={value}>{getTaskPriorityLabel(t, value)}</option>
           ))}
         </select>
       </div>
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          Status *
+          {t('tasks.taskStatus')} *
         </label>
         <select
           value={formData.status}
@@ -105,8 +106,8 @@ const TaskForm = ({ formData, setFormData, onSubmit, submitLabel, isSaving, cate
           className="flex h-10 w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
           disabled={isSaving}
         >
-          {Object.entries(TASK_STATUS_LABELS).map(([value, label]) => (
-            <option key={value} value={value}>{label}</option>
+          {Object.values(TASK_STATUS).map((value) => (
+            <option key={value} value={value}>{getTaskStatusLabel(t, value)}</option>
           ))}
         </select>
       </div>
@@ -114,7 +115,7 @@ const TaskForm = ({ formData, setFormData, onSubmit, submitLabel, isSaving, cate
 
     <div>
       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-        Category
+        {t('tasks.taskCategory')}
       </label>
       <select
         value={formData.categoryId}
@@ -122,7 +123,7 @@ const TaskForm = ({ formData, setFormData, onSubmit, submitLabel, isSaving, cate
         className="flex h-10 w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
         disabled={isSaving}
       >
-        <option value="">No Category</option>
+        <option value="">{t('tasks.noCategory')}</option>
         {categories.map((category) => (
           <option key={category.id} value={category.id}>{category.name}</option>
         ))}
@@ -136,7 +137,7 @@ const TaskForm = ({ formData, setFormData, onSubmit, submitLabel, isSaving, cate
         onClick={onCancel}
         disabled={isSaving}
       >
-        Cancel
+        {t('common.cancel')}
       </Button>
       <Button type="submit" disabled={isSaving}>
         {isSaving ? <LoadingSpinner size="sm" className="mr-2" /> : null}
@@ -147,6 +148,7 @@ const TaskForm = ({ formData, setFormData, onSubmit, submitLabel, isSaving, cate
 );
 
 export function Tasks() {
+  const { t } = useTranslation();
   const [tasks, setTasks] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -519,8 +521,8 @@ export function Tasks() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Tasks</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">Manage your tasks and stay organized.</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('tasks.title')}</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">{t('tasks.myTasks')}</p>
         </div>
         <div className="flex gap-3">
           {/* View Toggle */}
@@ -532,7 +534,7 @@ export function Tasks() {
               className="h-8"
             >
               <List className="mr-1 h-4 w-4" />
-              List
+              {t('tasks.listView')}
             </Button>
             <Button
               variant={viewMode === 'calendar' ? 'default' : 'ghost'}
@@ -541,26 +543,28 @@ export function Tasks() {
               className="h-8"
             >
               <Calendar className="mr-1 h-4 w-4" />
-              Calendar
+              {t('tasks.calendarView')}
             </Button>
           </div>
           <Button
             onClick={() => setIsAIModalOpen(true)}
             className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+            data-tutorial="ai-task-button"
           >
             <Sparkles className="mr-2 h-4 w-4" />
-            AI Create
+            {t('ai.createWithAI')}
           </Button>
           <Button
             onClick={() => setIsImageModalOpen(true)}
             className="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700"
+            data-tutorial="ai-task-button"
           >
             <Image className="mr-2 h-4 w-4" />
-            AI Image
+            {t('ai.imageUpload')}
           </Button>
-          <Button onClick={() => setIsCreateModalOpen(true)}>
+          <Button onClick={() => setIsCreateModalOpen(true)} data-tutorial="add-task">
             <Plus className="mr-2 h-4 w-4" />
-            New Task
+            {t('tasks.addTask')}
           </Button>
         </div>
       </div>
@@ -573,7 +577,7 @@ export function Tasks() {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
-                  placeholder="Search tasks..."
+                  placeholder={t('common.search')}
                   value={searchTerm}
                   onChange={(e) => {
                     setSearchTerm(e.target.value);
@@ -590,9 +594,9 @@ export function Tasks() {
                 }}
                 className="flex h-10 w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
               >
-                <option value="all">All Status</option>
-                {Object.entries(TASK_STATUS_LABELS).map(([value, label]) => (
-                  <option key={value} value={value}>{label}</option>
+                <option value="all">{t('tasks.allStatus')}</option>
+                {Object.values(TASK_STATUS).map((value) => (
+                  <option key={value} value={value}>{getTaskStatusLabel(t, value)}</option>
                 ))}
               </select>
               <select
@@ -600,9 +604,9 @@ export function Tasks() {
                 onChange={(e) => setSortBy(e.target.value)}
                 className="flex h-10 w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100"
               >
-                <option value="id">Sort by ID</option>
-                <option value="createdAt">Sort by Created Date</option>
-                <option value="startTime">Sort by Start Time</option>
+                <option value="id">{t('tasks.sortById')}</option>
+                <option value="createdAt">{t('tasks.sortByCreated')}</option>
+                <option value="startTime">{t('tasks.sortByStart')}</option>
               </select>
             </div>
           </CardContent>
@@ -623,7 +627,7 @@ export function Tasks() {
             <div className="absolute inset-0 bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm flex items-center justify-center rounded-2xl z-50">
               <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 flex items-center gap-3">
                 <LoadingSpinner size="sm" />
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Loading...</span>
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('common.loading')}</span>
               </div>
             </div>
           )}
@@ -634,12 +638,12 @@ export function Tasks() {
       {viewMode === 'list' && (
         loading ? (
           <div className="flex items-center justify-center h-96">
-            <LoadingSpinner size="lg" text="Loading tasks..." />
+            <LoadingSpinner size="lg" text={t('tasks.loading')} />
           </div>
         ) : tasks.length === 0 ? (
           <Card>
             <CardContent className="p-12 text-center">
-              <p className="text-gray-500 dark:text-gray-400">No tasks found. Create your first task!</p>
+              <p className="text-gray-500 dark:text-gray-400">{t('tasks.noTasks')}</p>
             </CardContent>
           </Card>
         ) : (
@@ -659,11 +663,11 @@ export function Tasks() {
                           {task.title}
                         </h3>
                         <Badge variant="outline" className={TASK_STATUS_COLORS[task.status]}>
-                          {TASK_STATUS_LABELS[task.status]}
+                          {getTaskStatusLabel(t, task.status)}
                         </Badge>
                         {task.priority && (
                           <Badge variant="outline" className={TASK_PRIORITY_COLORS[task.priority]}>
-                            {TASK_PRIORITY_LABELS[task.priority]}
+                            {getTaskPriorityLabel(t, task.priority)}
                           </Badge>
                         )}
                         {task.endTime && isOverdue(task.endTime) && task.status !== 'DONE' && (
@@ -680,12 +684,12 @@ export function Tasks() {
                           <span>📁 {task.categoryName}</span>
                         )}
                         {task.startTime && (
-                          <span>🕐 Start: {formatDateTime(task.startTime)}</span>
+                          <span>🕐 {t('tasks.taskStartDate')}: {formatDateTime(task.startTime)}</span>
                         )}
                         {task.endTime && (
-                          <span>🕐 End: {formatDateTime(task.endTime)}</span>
+                          <span>🕐 {t('tasks.taskEndDate')}: {formatDateTime(task.endTime)}</span>
                         )}
-                        <span>Created: {formatDateTime(task.createdAt)}</span>
+                        <span>{t('common.create')}: {formatDateTime(task.createdAt)}</span>
                       </div>
                     </div>
                     
@@ -731,7 +735,7 @@ export function Tasks() {
       {totalPages > 0 && (
         <div className="flex items-center justify-between">
           <div className="text-sm text-gray-600 dark:text-gray-400">
-            Page {currentPage + 1} of {totalPages}
+            {t('pagination.page')} {currentPage + 1} {t('pagination.of')} {totalPages}
           </div>
           <div className="flex space-x-2">
             <Button
@@ -739,14 +743,14 @@ export function Tasks() {
               onClick={() => setCurrentPage(p => Math.max(0, p - 1))}
               disabled={currentPage === 0}
             >
-              Previous
+              {t('common.previous')}
             </Button>
             <Button
               variant="outline"
               onClick={() => setCurrentPage(p => Math.min(totalPages - 1, p + 1))}
               disabled={currentPage >= totalPages - 1}
             >
-              Next
+              {t('common.next')}
             </Button>
           </div>
         </div>
@@ -759,7 +763,7 @@ export function Tasks() {
           setIsCreateModalOpen(false);
           resetForm();
         }}
-        title="Create New Task"
+        title={t('tasks.addTask')}
         showCloseButton={false}
         size="lg"
       >
@@ -767,11 +771,12 @@ export function Tasks() {
           formData={formData}
           setFormData={setFormData}
           onSubmit={handleCreateTask} 
-          submitLabel="Create Task"
+          submitLabel={t('tasks.createTask')}
           isSaving={isSaving}
           categories={categories}
           onCancel={handleCloseModal}
           errors={validationErrors}
+          t={t}
         />
       </Modal>
 
@@ -783,7 +788,7 @@ export function Tasks() {
           setEditingTask(null);
           resetForm();
         }}
-        title="Edit Task"
+        title={t('tasks.editTask')}
         showCloseButton={false}
         size="lg"
       >
@@ -791,11 +796,12 @@ export function Tasks() {
           formData={formData}
           setFormData={setFormData}
           onSubmit={handleUpdateTask} 
-          submitLabel="Update Task"
+          submitLabel={t('tasks.updateTask')}
           isSaving={isSaving}
           categories={categories}
           onCancel={handleCloseModal}
           errors={validationErrors}
+          t={t}
         />
       </Modal>
 
@@ -806,7 +812,7 @@ export function Tasks() {
           setIsAIModalOpen(false);
           setAiPrompt('');
         }}
-        title="Create Task with AI"
+        title={t('ai.createWithAI')}
         showCloseButton={false}
         size="lg"
       >
@@ -816,16 +822,16 @@ export function Tasks() {
               <Sparkles className="h-5 w-5 text-purple-600 dark:text-purple-400 mt-1 flex-shrink-0" />
               <div>
                 <h4 className="font-semibold text-purple-900 dark:text-purple-100 mb-1">
-                  AI-Powered Task Creation
+                  {t('ai.aiPoweredTaskCreation')}
                 </h4>
                 <p className="text-sm text-purple-700 dark:text-purple-300">
-                  Describe your task in natural language, and AI will automatically extract the title, dates, priority, and more!
+                  {t('ai.aiPoweredDescription')}
                 </p>
                 <div className="mt-2 text-xs text-purple-600 dark:text-purple-400 space-y-1">
-                  <p><strong>Examples:</strong></p>
-                  <p>• "Meeting with team tomorrow at 2pm about project review"</p>
-                  <p>• "High priority: Submit report by Friday 5pm"</p>
-                  <p>• "Call dentist next week to schedule appointment"</p>
+                  <p><strong>{t('ai.examples')}</strong></p>
+                  <p>• {t('ai.example1')}</p>
+                  <p>• {t('ai.example2')}</p>
+                  <p>• {t('ai.example3')}</p>
                 </div>
               </div>
             </div>
@@ -833,12 +839,12 @@ export function Tasks() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Describe your task *
+              {t('ai.describeYourTask')} *
             </label>
             <textarea
               value={aiPrompt}
               onChange={(e) => setAiPrompt(e.target.value)}
-              placeholder="e.g., Schedule a high priority meeting with the marketing team tomorrow at 3pm to discuss Q4 campaign"
+              placeholder={t('ai.describeTaskPlaceholder')}
               className="flex min-h-[120px] w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 disabled:cursor-not-allowed disabled:opacity-50"
               disabled={isSaving}
             />
@@ -854,7 +860,7 @@ export function Tasks() {
               }}
               disabled={isSaving}
             >
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button 
               type="submit" 
@@ -862,7 +868,7 @@ export function Tasks() {
               className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
             >
               {isSaving ? <LoadingSpinner size="sm" className="mr-2" /> : <Sparkles className="mr-2 h-4 w-4" />}
-              Create with AI
+              {t('ai.createWithAI')}
             </Button>
           </div>
         </form>
@@ -875,7 +881,7 @@ export function Tasks() {
           setIsImageModalOpen(false);
           resetImageForm();
         }}
-        title="Create Tasks from Image"
+        title={t('ai.createFromImage')}
         showCloseButton={false}
         size="lg"
       >
@@ -885,18 +891,18 @@ export function Tasks() {
               <Image className="h-5 w-5 text-green-600 dark:text-green-400 mt-1 flex-shrink-0" />
               <div>
                 <h4 className="font-semibold text-green-900 dark:text-green-100 mb-1">
-                  AI Vision - Extract Tasks from Images
+                  {t('ai.aiVisionTitle')}
                 </h4>
                 <p className="text-sm text-green-700 dark:text-green-300">
-                  Upload an image containing schedule information, and AI will automatically extract all tasks!
+                  {t('ai.aiVisionDescription')}
                 </p>
                 <div className="mt-2 text-xs text-green-600 dark:text-green-400 space-y-1">
-                  <p><strong>Supported images:</strong></p>
-                  <p>•  Calendar screenshots (Google Calendar, Outlook, etc.)</p>
-                  <p>•  Todo list screenshots (Todoist, Notion, etc.)</p>
-                  <p>•  Email screenshots about meetings/tasks</p>
-                  <p>•  Written schedules or planning notes</p>
-                  <p className="mt-2"><strong>Format:</strong> JPG, PNG (max 10MB)</p>
+                  <p><strong>{t('ai.supportedImages')}</strong></p>
+                  <p>• {t('ai.supportedImage1')}</p>
+                  <p>• {t('ai.supportedImage2')}</p>
+                  <p>• {t('ai.supportedImage3')}</p>
+                  <p>• {t('ai.supportedImage4')}</p>
+                  <p className="mt-2"><strong>{t('ai.formatInfo')}</strong></p>
                 </div>
               </div>
             </div>
@@ -905,7 +911,7 @@ export function Tasks() {
           {/* Image Upload Area */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Upload Image *
+              {t('ai.uploadImageLabel')} *
             </label>
             <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center hover:border-green-500 transition-colors">
               {imagePreview ? (
@@ -926,7 +932,7 @@ export function Tasks() {
                       }}
                       disabled={isSaving}
                     >
-                      Remove Image
+                      {t('ai.removeImage')}
                     </Button>
                   </div>
                 </div>
@@ -934,10 +940,10 @@ export function Tasks() {
                 <div>
                   <Image className="h-12 w-12 mx-auto text-gray-400 mb-3" />
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                    Click to upload or drag and drop
+                    {t('ai.clickToUpload')}
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-500">
-                    JPG or PNG (max 10MB)
+                    {t('ai.jpgOrPng')}
                   </p>
                   <input
                     type="file"
@@ -951,7 +957,7 @@ export function Tasks() {
                     htmlFor="image-upload"
                     className="mt-4 inline-block cursor-pointer px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
                   >
-                    Select Image
+                    {t('ai.selectImage')}
                   </label>
                 </div>
               )}
@@ -961,12 +967,12 @@ export function Tasks() {
           {/* Optional Context */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Additional Context (Optional)
+              {t('ai.additionalContext')}
             </label>
             <Input
               value={imageContext}
               onChange={(e) => setImageContext(e.target.value)}
-              placeholder="e.g., These are my work tasks for next week"
+              placeholder={t('ai.contextPlaceholder')}
               disabled={isSaving}
             />
           </div>
@@ -981,7 +987,7 @@ export function Tasks() {
               }}
               disabled={isSaving}
             >
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button 
               type="submit" 
@@ -989,7 +995,7 @@ export function Tasks() {
               className="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700"
             >
               {isSaving ? <LoadingSpinner size="sm" className="mr-2" /> : <Image className="mr-2 h-4 w-4" />}
-              Extract Tasks
+              {t('ai.extractTasks')}
             </Button>
           </div>
         </form>
@@ -1008,12 +1014,11 @@ export function Tasks() {
           setIsDeleteModalOpen(false);
           setTaskToDelete(null);
         }}
-        title="Delete Task"
+        title={t('tasks.deleteTask')}
       >
         <div className="space-y-4">
           <p className="text-gray-600 dark:text-gray-400">
-            Are you sure you want to delete <strong>{taskToDelete?.title}</strong>?
-            This action cannot be undone.
+            {t('tasks.confirmDelete')} <strong>{taskToDelete?.title}</strong>?
           </p>
           <div className="flex justify-end gap-3">
             <Button
@@ -1023,13 +1028,13 @@ export function Tasks() {
                 setTaskToDelete(null);
               }}
             >
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button
               variant="danger"
               onClick={confirmDeleteTask}
             >
-              Delete Task
+              {t('tasks.deleteTask')}
             </Button>
           </div>
         </div>

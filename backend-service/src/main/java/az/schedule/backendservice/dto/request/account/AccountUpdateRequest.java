@@ -16,10 +16,10 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class AccountUpdateRequest {
-    @Size(min = 2, max = 100, message = "Full name must be between 2 and 100 characters")
+    @Size(min = 2, max = 100, message = "{validation.fullname.size}")
     String fullName;
     
-    @Email(message = "Email must be valid")
+    @Email(message = "{validation.email.invalid}")
     String email;
     
     Boolean gender;
@@ -27,7 +27,7 @@ public class AccountUpdateRequest {
     @JsonFormat(pattern = "yyyy-MM-dd")
     LocalDate birthDate;
     
-    @Pattern(regexp = "^[0-9]{10,15}$", message = "Phone number must be between 10 and 15 digits")
+    @Pattern(regexp = "^[0-9]{10,15}$", message = "{validation.phone.pattern}")
     String phoneNumber;
     
     String avatarUrl;

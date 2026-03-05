@@ -31,6 +31,7 @@ import org.springframework.web.bind.annotation.*;
 public class AdminController {
     private final AdminService adminService;
     private final AccountService accountService;
+    private final az.schedule.backendservice.utils.MessageUtils messageUtils;
 
     @Operation(summary = "Get system statistics", description = "Retrieve system-wide statistics including users, tasks, and categories")
     @GetMapping("/statistics")
@@ -38,7 +39,7 @@ public class AdminController {
         SystemStatisticsResponse statistics = adminService.getSystemStatistics();
         return ApiResponse.<SystemStatisticsResponse>builder()
                 .code(HttpStatus.OK.value())
-                .message("System statistics retrieved successfully")
+                .message(messageUtils.getMessage("success.admin.statistics"))
                 .data(statistics)
                 .build();
     }
@@ -57,7 +58,7 @@ public class AdminController {
         PageResponse<AccountDTO> users = adminService.getAllUsers(pageable);
         return ApiResponse.<PageResponse<AccountDTO>>builder()
                 .code(HttpStatus.OK.value())
-                .message("Users retrieved successfully")
+                .message(messageUtils.getMessage("success.admin.users.get"))
                 .data(users)
                 .build();
     }
@@ -73,7 +74,7 @@ public class AdminController {
         PageResponse<AccountDTO> users = accountService.getNewsArticlesByCriteria(pageNo, pageSize, sortBy, searchs);
         return ApiResponse.<PageResponse<AccountDTO>>builder()
                 .code(HttpStatus.OK.value())
-                .message("Users retrieved successfully")
+                .message(messageUtils.getMessage("success.admin.users.get"))
                 .data(users)
                 .build();
     }
@@ -90,7 +91,7 @@ public class AdminController {
         
         return ApiResponse.<PageResponse<AccountDTO>>builder()
                 .code(HttpStatus.OK.value())
-                .message("Users search completed successfully")
+                .message(messageUtils.getMessage("success.admin.users.search"))
                 .data(users)
                 .build();
     }
@@ -104,7 +105,7 @@ public class AdminController {
         AccountDTO updatedUser = adminService.updateUserRole(userId, request.getRoleId());
         return ApiResponse.<AccountDTO>builder()
                 .code(HttpStatus.OK.value())
-                .message("User role updated successfully")
+                .message(messageUtils.getMessage("success.admin.user.role.update"))
                 .data(updatedUser)
                 .build();
     }
@@ -118,7 +119,7 @@ public class AdminController {
         AccountDTO updatedUser = adminService.updateUserStatus(userId, request.getIsActive());
         return ApiResponse.<AccountDTO>builder()
                 .code(HttpStatus.OK.value())
-                .message("User status updated successfully")
+                .message(messageUtils.getMessage("success.admin.user.status.update"))
                 .data(updatedUser)
                 .build();
     }
@@ -131,14 +132,14 @@ public class AdminController {
         if (currentUserId.equals(userId)) {
             return ApiResponse.<Void>builder()
                     .code(HttpStatus.BAD_REQUEST.value())
-                    .message("You cannot delete your own account")
+                    .message(messageUtils.getMessage("error.admin.self.delete"))
                     .build();
         }
         
         adminService.deleteUser(userId);
         return ApiResponse.<Void>builder()
                 .code(HttpStatus.OK.value())
-                .message("User deleted successfully")
+                .message(messageUtils.getMessage("success.admin.user.delete"))
                 .build();
     }
 
@@ -155,7 +156,7 @@ public class AdminController {
         
         return ApiResponse.<AccountDTO>builder()
                 .code(HttpStatus.OK.value())
-                .message("User retrieved successfully")
+                .message(messageUtils.getMessage("success.admin.user.get"))
                 .data(user)
                 .build();
     }

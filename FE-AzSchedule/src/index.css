@@ -4,19 +4,21 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    /* Tết theme - Light mode with warm undertones */
+    --background: 24 10% 99%;
+    --foreground: 24 10% 10%;
+    --border: 24 6% 90%;
+    --input: 24 6% 90%;
+    --ring: 0 72% 51%;
   }
  
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    /* Tết theme - Dark mode with warm undertones */
+    --background: 24 10% 10%;
+    --foreground: 24 6% 98%;
+    --border: 24 10% 20%;
+    --input: 24 10% 20%;
+    --ring: 0 72% 51%;
   }
   
   * {
@@ -47,9 +49,9 @@
     }
   }
 
-  /* Blob animation for landing page */
+  /* Blob animation for landing page - Tết spring warmth */
   .animate-blob {
-    animation: blob 7s infinite;
+    animation: blob 8s infinite ease-in-out;
   }
 
   .animation-delay-2000 {
@@ -65,14 +67,40 @@
       transform: translate(0px, 0px) scale(1);
     }
     33% {
-      transform: translate(30px, -50px) scale(1.1);
+      transform: translate(30px, -50px) scale(1.15);
     }
     66% {
-      transform: translate(-20px, 20px) scale(0.9);
+      transform: translate(-20px, 20px) scale(0.95);
     }
     100% {
       transform: translate(0px, 0px) scale(1);
     }
+  }
+
+  /* Tết glow effect */
+  .tet-glow {
+    box-shadow: 0 0 20px rgba(251, 191, 36, 0.3), 0 0 40px rgba(239, 68, 68, 0.2);
+  }
+
+  /* Subtle golden shimmer */
+  @keyframes shimmer {
+    0% {
+      background-position: -1000px 0;
+    }
+    100% {
+      background-position: 1000px 0;
+    }
+  }
+
+  .animate-shimmer {
+    animation: shimmer 3s infinite linear;
+    background: linear-gradient(
+      to right,
+      transparent 0%,
+      rgba(251, 191, 36, 0.1) 50%,
+      transparent 100%
+    );
+    background-size: 1000px 100%;
   }
 
   /* Grid pattern for CTA section */

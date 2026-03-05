@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/streak")
 public class StreakController {
     private final StreakService streakService;
+    private final az.schedule.backendservice.utils.MessageUtils messageUtils;
     
     @Operation(summary = "Get user streak", description = "Get current streak, longest streak, and activity data")
     @GetMapping
@@ -24,7 +25,7 @@ public class StreakController {
         StreakResponse streak = streakService.getUserStreak(accountId);
         return ApiResponse.<StreakResponse>builder()
                 .code(HttpStatus.OK.value())
-                .message("Streak retrieved successfully")
+                .message(messageUtils.getMessage("success.streak.get"))
                 .data(streak)
                 .build();
     }

@@ -11,6 +11,6 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UpdateUserStatusRequest {
-    @NotNull(message = "Active status is required")
+    @NotNull(message = "{validation.active.status.required}")
     Boolean isActive;
 }

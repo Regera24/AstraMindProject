@@ -9,8 +9,17 @@
     "notifications",
     "tabs",
     "webNavigation",
-    "scripting"
+    "scripting",
+    "identity"
   ],
+  "oauth2": {
+    "client_id": "389350168183-srr22faut5obt27qffosm14hk5npifc7.apps.googleusercontent.com",
+    "scopes": [
+      "openid",
+      "email",
+      "profile"
+    ]
+  },
   "host_permissions": [
     "<all_urls>"
   ],

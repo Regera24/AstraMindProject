@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { TrendingUp, Calendar, Clock, Target, AlertCircle, Award, BarChart3, Brain, Lightbulb, CheckCircle2, Sparkles } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card.jsx';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner.jsx';
+import { ScheduleSuggestions } from '../components/ScheduleSuggestions.jsx';
 import { getTaskAnalytics, getAIInsights } from '../services/analyticsService.js';
 import { getErrorMessage } from '../utils/errorHandler.js';
 import toast from 'react-hot-toast';
@@ -55,6 +57,7 @@ const HeatmapCell = ({ hour, day, intensity, count }) => {
 };
 
 const Analytics = () => {
+  const { t, i18n } = useTranslation();
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
   const [aiInsights, setAiInsights] = useState(null);
@@ -62,7 +65,7 @@ const Analytics = () => {
 
   useEffect(() => {
     fetchAnalytics();
-  }, []);
+  }, [i18n.language]); // Re-fetch when language changes
 
   const fetchAnalytics = async () => {
     try {
@@ -83,9 +86,9 @@ const Analytics = () => {
     try {
       const insightsResponse = await getAIInsights();
       setAiInsights(insightsResponse.data);
-      toast.success('AI insights generated successfully!');
+      toast.success(t('success.createSuccess'));
     } catch (error) {
-      const errorMessage = getErrorMessage(error, 'Failed to generate AI insights');
+      const errorMessage = getErrorMessage(error, t('error.somethingWentWrong'));
       toast.error(errorMessage);
     } finally {
       setAiInsightsLoading(false);
@@ -104,7 +107,7 @@ const Analytics = () => {
     return (
       <div className="text-center py-12">
         <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-        <p className="text-gray-600 dark:text-gray-400">Unable to load analytics data</p>
+        <p className="text-gray-600 dark:text-gray-400">{t('analytics.unableToLoad')}</p>
       </div>
     );
   }
@@ -135,8 +138,8 @@ const Analytics = () => {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Analytics & Insights</h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-1">Track your productivity and get AI-powered recommendations</p>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('analytics.analyticsInsights')}</h1>
+        <p className="text-gray-600 dark:text-gray-400 mt-1">{t('analytics.trackProductivity')}</p>
       </div>
 
       {/* AI Insights Section */}
@@ -150,7 +153,7 @@ const Analytics = () => {
             <CardHeader>
               <div className="flex items-center space-x-2">
                 <Brain className="h-5 w-5 text-purple-600 dark:text-purple-400 animate-pulse" />
-                <CardTitle>AI-Powered Insights</CardTitle>
+                <CardTitle>{t('analytics.aiPoweredInsights')}</CardTitle>
               </div>
             </CardHeader>
             <CardContent>
@@ -164,7 +167,7 @@ const Analytics = () => {
                 </div>
                 <div className="flex items-center justify-center py-4">
                   <LoadingSpinner size="sm" />
-                  <span className="ml-2 text-sm text-purple-600 dark:text-purple-400">Analyzing your productivity patterns...</span>
+                  <span className="ml-2 text-sm text-purple-600 dark:text-purple-400">{t('analytics.analyzingPatterns')}</span>
                 </div>
               </div>
             </CardContent>
@@ -175,29 +178,30 @@ const Analytics = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
+          data-tutorial="ai-insights"
         >
           <Card className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 border-purple-200 dark:border-purple-800">
             <CardHeader>
               <div className="flex items-center space-x-2">
                 <Brain className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-                <CardTitle>AI-Powered Insights</CardTitle>
+                <CardTitle>{t('analytics.aiPoweredInsights')}</CardTitle>
               </div>
             </CardHeader>
             <CardContent>
               <div className="text-center py-8">
                 <Sparkles className="h-12 w-12 text-purple-500 dark:text-purple-400 mx-auto mb-4" />
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                  Get AI-Powered Productivity Insights
+                  {t('analytics.getAIInsights')}
                 </h3>
                 <p className="text-gray-600 dark:text-gray-400 mb-6">
-                  Let AI analyze your task patterns and provide personalized recommendations to boost your productivity.
+                  {t('analytics.aiAnalyzeDescription')}
                 </p>
                 <button
                   onClick={handleGenerateAIInsights}
                   className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-medium rounded-lg transition-all transform hover:scale-105 shadow-lg"
                 >
                   <Sparkles className="h-5 w-5 mr-2" />
-                  Generate AI Insights
+                  {t('analytics.generateAIInsights')}
                 </button>
               </div>
             </CardContent>
@@ -205,6 +209,7 @@ const Analytics = () => {
         </motion.div>
       ) : (
         <motion.div
+          data-tutorial="ai-insights"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
@@ -214,7 +219,7 @@ const Analytics = () => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
                   <Brain className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-                  <CardTitle>AI-Powered Insights</CardTitle>
+                  <CardTitle>{t('analytics.aiPoweredInsights')}</CardTitle>
                 </div>
                 <div className="flex items-center space-x-2">
                   <span className="text-2xl">{getScoreEmoji(aiInsights.productivityScore)}</span>
@@ -232,7 +237,7 @@ const Analytics = () => {
                 <div className="bg-white dark:bg-gray-800 p-4 rounded-lg">
                   <div className="flex items-center space-x-2 mb-3">
                     <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
-                    <h3 className="font-semibold text-gray-900 dark:text-white">Strengths</h3>
+                    <h3 className="font-semibold text-gray-900 dark:text-white">{t('analytics.strengths')}</h3>
                   </div>
                   <ul className="space-y-2">
                     {aiInsights.strengths.map((strength, idx) => (
@@ -248,7 +253,7 @@ const Analytics = () => {
                 <div className="bg-white dark:bg-gray-800 p-4 rounded-lg">
                   <div className="flex items-center space-x-2 mb-3">
                     <Lightbulb className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
-                    <h3 className="font-semibold text-gray-900 dark:text-white">Suggestions</h3>
+                    <h3 className="font-semibold text-gray-900 dark:text-white">{t('analytics.suggestions')}</h3>
                   </div>
                   <ul className="space-y-2">
                     {aiInsights.suggestions.map((suggestion, idx) => (
@@ -265,7 +270,7 @@ const Analytics = () => {
                 <div className="bg-white dark:bg-gray-800 p-4 rounded-lg">
                   <div className="flex items-center space-x-2 mb-3">
                     <Target className="h-5 w-5 text-orange-600 dark:text-orange-400" />
-                    <h3 className="font-semibold text-gray-900 dark:text-white">Areas for Improvement</h3>
+                    <h3 className="font-semibold text-gray-900 dark:text-white">{t('analytics.areasForImprovement')}</h3>
                   </div>
                   <ul className="space-y-2">
                     {aiInsights.weaknesses.map((weakness, idx) => (
@@ -279,7 +284,7 @@ const Analytics = () => {
               )}
 
               <div className="flex items-center justify-between p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
-                <span className="text-sm text-purple-900 dark:text-purple-100 font-medium">Productivity Score</span>
+                <span className="text-sm text-purple-900 dark:text-purple-100 font-medium">{t('analytics.productivityScore')}</span>
                 <div className="flex items-center space-x-2">
                   <div className="w-32 h-2 bg-gray-300 dark:bg-gray-700 rounded-full overflow-hidden">
                     <div 
@@ -297,34 +302,37 @@ const Analytics = () => {
         </motion.div>
       )}
 
+      {/* Schedule Suggestions Section */}
+      <ScheduleSuggestions />
+
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
-          title="Total Tasks"
+          title={t('analytics.totalTasks')}
           value={statistics.totalTasks}
           icon={BarChart3}
-          subtitle={`${statistics.completionRate}% completion rate`}
+          subtitle={`${statistics.completionRate}% ${t('analytics.completionRate').toLowerCase()}`}
           color="blue"
         />
         <StatCard
-          title="Completed"
+          title={t('analytics.completed')}
           value={statistics.completedTasks}
           icon={CheckCircle2}
-          subtitle={`${statistics.tasksCompletedToday} today`}
+          subtitle={`${statistics.tasksCompletedToday} ${t('analytics.today')}`}
           color="green"
         />
         <StatCard
-          title="In Progress"
+          title={t('analytics.inProgress')}
           value={statistics.inProgressTasks}
           icon={TrendingUp}
-          subtitle={`${statistics.todoTasks} to do`}
+          subtitle={`${statistics.todoTasks} ${t('analytics.toDo')}`}
           color="orange"
         />
         <StatCard
-          title="Overdue"
+          title={t('analytics.overdue')}
           value={statistics.overdueTasks}
           icon={AlertCircle}
-          subtitle={`${statistics.highPriorityTasks} high priority`}
+          subtitle={`${statistics.highPriorityTasks} ${t('analytics.highPriority')}`}
           color="red"
         />
       </div>
@@ -334,10 +342,10 @@ const Analytics = () => {
         <CardHeader>
           <div className="flex items-center space-x-2">
             <Calendar className="h-5 w-5" />
-            <CardTitle>Activity Heatmap</CardTitle>
+            <CardTitle>{t('analytics.activityHeatmap')}</CardTitle>
           </div>
           <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-            Your task activity by day and hour
+            {t('analytics.taskActivityByDay')}
           </p>
         </CardHeader>
         <CardContent className="p-6">
@@ -359,7 +367,7 @@ const Analytics = () => {
               {[1, 2, 3, 4, 5, 6, 7].map((day) => (
                 <div key={day} className="flex items-center gap-1">
                   <div className="w-20 text-sm font-medium text-gray-700 dark:text-gray-300 text-right pr-2">
-                    {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][day - 1]}
+                    {t(`analytics.${['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'][day - 1]}`)}
                   </div>
                   <div className="flex gap-1">
                     {[...Array(24)].map((_, hour) => {
@@ -384,10 +392,10 @@ const Analytics = () => {
             <div className="flex items-center justify-center mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
               <div className="flex items-center space-x-4">
                 <div className="text-sm text-gray-600 dark:text-gray-400">
-                  Activity Level:
+                  {t('analytics.activityLevel')}
                 </div>
                 <div className="flex items-center space-x-2">
-                  <span className="text-xs text-gray-500 dark:text-gray-400">Less</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">{t('analytics.less')}</span>
                   <div className="flex space-x-1">
                     {[0, 0.2, 0.4, 0.6, 0.8, 1].map((intensity) => (
                       <div
@@ -403,7 +411,7 @@ const Analytics = () => {
                       />
                     ))}
                   </div>
-                  <span className="text-xs text-gray-500 dark:text-gray-400">More</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">{t('analytics.more')}</span>
                 </div>
               </div>
             </div>
@@ -416,7 +424,7 @@ const Analytics = () => {
         {/* Status Distribution */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Status Distribution</CardTitle>
+            <CardTitle className="text-lg">{t('analytics.statusDistribution')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
@@ -450,7 +458,7 @@ const Analytics = () => {
         {/* Priority Distribution */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Priority Distribution</CardTitle>
+            <CardTitle className="text-lg">{t('analytics.priorityDistribution')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
@@ -484,35 +492,35 @@ const Analytics = () => {
         {/* Productivity Stats */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Productivity Insights</CardTitle>
+            <CardTitle className="text-lg">{t('analytics.productivityInsights')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               <div>
                 <div className="flex items-center space-x-2 mb-1">
                   <Clock className="h-4 w-4 text-blue-500" />
-                  <span className="text-sm text-gray-600 dark:text-gray-400">Most Productive Day</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">{t('analytics.mostProductiveDay')}</span>
                 </div>
                 <p className="text-lg font-semibold">{productivityTrends.mostProductiveDay}</p>
               </div>
               <div>
                 <div className="flex items-center space-x-2 mb-1">
                   <Clock className="h-4 w-4 text-purple-500" />
-                  <span className="text-sm text-gray-600 dark:text-gray-400">Most Productive Hour</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">{t('analytics.mostProductiveHour')}</span>
                 </div>
                 <p className="text-lg font-semibold">{productivityTrends.mostProductiveHour}</p>
               </div>
               <div>
                 <div className="flex items-center space-x-2 mb-1">
                   <TrendingUp className="h-4 w-4 text-green-500" />
-                  <span className="text-sm text-gray-600 dark:text-gray-400">Avg Tasks/Day</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">{t('analytics.avgTasksPerDay')}</span>
                 </div>
                 <p className="text-lg font-semibold">{productivityTrends.averageTasksPerDay}</p>
               </div>
               <div>
                 <div className="flex items-center space-x-2 mb-1">
                   <Award className="h-4 w-4 text-orange-500" />
-                  <span className="text-sm text-gray-600 dark:text-gray-400">Avg Completion Time</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">{t('analytics.avgCompletionTime')}</span>
                 </div>
                 <p className="text-lg font-semibold">{statistics.averageCompletionTime}h</p>
               </div>
@@ -525,7 +533,7 @@ const Analytics = () => {
       {categoryDistribution && Object.keys(categoryDistribution).length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Tasks by Category</CardTitle>
+            <CardTitle>{t('analytics.tasksByCategory')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

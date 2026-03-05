@@ -60,6 +60,7 @@ public class TaskServiceImpl implements TaskService {
 
         Task task = taskConverter.toEntity(request, account, category);
         Task savedTask = taskRepository.save(task);
+        
         return taskConverter.toDTO(savedTask);
     }
 

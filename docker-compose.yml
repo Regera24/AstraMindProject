@@ -1,0 +1,128 @@
+version: '3.8'
+
+services:
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: astramind-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword123
+      MYSQL_DATABASE: astramind_db
+      MYSQL_USER: astramind_user
+      MYSQL_PASSWORD: astramind_password123
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - astramind-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: astramind-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - astramind-network
+    command: redis-server --appendonly yes --requirepass redis_password123
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      timeout: 20s
+      retries: 5
+
+  # Backend Service
+  backend:
+    build:
+      context: ./backend-service
+      dockerfile: Dockerfile
+    container_name: astramind-backend
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      # Database Configuration
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/astramind_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: astramind_user
+      SPRING_DATASOURCE_PASSWORD: astramind_password123
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: com.mysql.cj.jdbc.Driver
+      
+      # JPA/Hibernate Configuration
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_SHOW_SQL: false
+      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.MySQL8Dialect
+      SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL: true
+      
+      # Redis Configuration
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+      SPRING_DATA_REDIS_PASSWORD: redis_password123
+      SPRING_DATA_REDIS_TIMEOUT: 60000
+      
+      # Application Configuration
+      SERVER_PORT: 8080
+      
+      # JWT Configuration
+      JWT_SECRET: T7EOnmBnmqvRABNZf9TsmuHLyFmauuAV66Nd8OdaTlFLBTocK2nH0NKIcwLpjJAosgGs8tV2BuuIQ2doKjiFfA==
+      
+      # CORS Configuration
+      CORS_ALLOWED_ORIGINS: http://localhost:3000,http://localhost:80,http://frontend:80
+      
+      # File Upload Configuration
+      SPRING_SERVLET_MULTIPART_MAX_FILE_SIZE: 10MB
+      SPRING_SERVLET_MULTIPART_MAX_REQUEST_SIZE: 10MB
+      
+      # Logging Configuration
+      LOGGING_LEVEL_AZ_SCHEDULE: DEBUG
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY: DEBUG
+      
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - astramind-network
+    volumes:
+      - backend_logs:/app/logs
+
+  # Frontend Service
+  frontend:
+    build:
+      context: ./FE-AzSchedule
+      dockerfile: Dockerfile
+    container_name: astramind-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_API_BASE_URL=http://localhost:8080/api
+      - VITE_APP_NAME=AstraMind
+      - VITE_APP_VERSION=1.0.0
+    depends_on:
+      - backend
+    networks:
+      - astramind-network
+
+# Networks
+networks:
+  astramind-network:
+    driver: bridge
+    name: astramind-network
+
+# Volumes
+volumes:
+  mysql_data:
+    name: astramind-mysql-data
+  redis_data:
+    name: astramind-redis-data
+  backend_logs:
+    name: astramind-backend-logs

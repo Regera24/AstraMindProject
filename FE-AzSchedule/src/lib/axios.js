@@ -1,4 +1,5 @@
 import axios from 'axios';
+import i18n from '../i18n';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1';
 
@@ -31,6 +32,10 @@ axiosInstance.interceptors.request.use(
         config.headers.Authorization = `Bearer ${token}`;
       }
     }
+    
+    // Add Accept-Language header for i18n
+    const language = i18n.language || localStorage.getItem('language') || 'vi';
+    config.headers['Accept-Language'] = language;
     
     return config;
   },

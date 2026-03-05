@@ -13,14 +13,14 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class NotificationRequest {
-    @NotBlank(message = "Title is required")
+    @NotBlank(message = "{validation.title.required}")
     String title;
     
-    @NotBlank(message = "Content is required")
+    @NotBlank(message = "{validation.content.required}")
     String content;
 
     NotificationType type;
     
-    @NotNull(message = "Target account ID is required")
+    @NotNull(message = "{validation.target.account.required}")
     Long targetAccountId;
 }

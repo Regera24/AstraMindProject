@@ -24,7 +24,7 @@ public class AccountConverter {
     public Account toAccountEntity(AccountCreationRequest request) {
         Account acc = modelMapper.map(request, Account.class);
         Role role =
-                roleRepository.findByCode(request.getRole()).orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND));
+                roleRepository.findByCode("USER").orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND));
         acc.setPassword(passwordEncoder.encode(request.getPassword()));
         acc.setRole(role);
         acc.setIsActive(true);

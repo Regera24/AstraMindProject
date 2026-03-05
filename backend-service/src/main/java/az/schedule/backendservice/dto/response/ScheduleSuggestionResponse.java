@@ -1,8 +1,10 @@
 package az.schedule.backendservice.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -29,6 +31,13 @@ public class ScheduleSuggestionResponse {
         String suggestedSchedule;
         String reason;
         Integer priorityScore;
+        
+        // Add structured datetime fields for easier frontend parsing
+        @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+        LocalDateTime suggestedStartTime;
+        
+        @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+        LocalDateTime suggestedEndTime;
     }
     
     @Getter

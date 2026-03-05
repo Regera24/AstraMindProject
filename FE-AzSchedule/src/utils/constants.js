@@ -6,11 +6,15 @@ export const TASK_STATUS = {
   PAUSED: 'PAUSED'
 };
 
-export const TASK_STATUS_LABELS = {
-  TODO: 'To Do',
-  IN_PROGRESS: 'In Progress',
-  DONE: 'Done',
-  PAUSED: 'Paused'
+// Task Status Labels - Use i18n keys
+export const getTaskStatusLabel = (t, status) => {
+  const labels = {
+    TODO: t('tasks.status.todo'),
+    IN_PROGRESS: t('tasks.status.inProgress'),
+    DONE: t('tasks.status.done'),
+    PAUSED: t('tasks.status.paused')
+  };
+  return labels[status] || status;
 };
 
 export const TASK_STATUS_COLORS = {
@@ -27,10 +31,14 @@ export const TASK_PRIORITY = {
   HIGH: 'HIGH'
 };
 
-export const TASK_PRIORITY_LABELS = {
-  LOW: 'Low',
-  MEDIUM: 'Medium',
-  HIGH: 'High'
+// Task Priority Labels - Use i18n keys
+export const getTaskPriorityLabel = (t, priority) => {
+  const labels = {
+    LOW: t('tasks.priority.low'),
+    MEDIUM: t('tasks.priority.medium'),
+    HIGH: t('tasks.priority.high')
+  };
+  return labels[priority] || priority;
 };
 
 export const TASK_PRIORITY_COLORS = {

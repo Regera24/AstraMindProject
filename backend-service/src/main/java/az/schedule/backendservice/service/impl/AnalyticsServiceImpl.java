@@ -45,9 +45,9 @@ public class AnalyticsServiceImpl implements AnalyticsService {
     }
     
     @Override
-    public AIInsights getAIInsights(Long accountId) {
+    public AIInsights getAIInsights(Long accountId, String language) {
         List<Task> allTasks = taskRepository.findByAccountId(accountId);
-        return generateAIInsights(allTasks);
+        return generateAIInsights(allTasks, language);
     }
     
     private TaskStatistics calculateStatistics(List<Task> tasks) {
@@ -279,26 +279,30 @@ public class AnalyticsServiceImpl implements AnalyticsService {
                 .build();
     }
     
-    private AIInsights generateAIInsights(List<Task> tasks) {
+    private AIInsights generateAIInsights(List<Task> tasks, String language) {
         try {
             TaskStatistics stats = calculateStatistics(tasks);
             ProductivityTrends trends = calculateProductivityTrends(tasks);
             
-            String prompt = buildAnalyticsPrompt(stats, trends, tasks);
+            String prompt = buildAnalyticsPrompt(stats, trends, tasks, language);
             
             String aiResponse = chatModel.call(prompt);
             
-            return parseAIInsightsResponse(aiResponse, stats.getCompletionRate());
+            return parseAIInsightsResponse(aiResponse, stats.getCompletionRate(), language);
             
         } catch (Exception e) {
             log.error("Error generating AI insights: {}", e.getMessage(), e);
-            return getDefaultInsights();
+            return getDefaultInsights(language);
         }
     }
     
-    private String buildAnalyticsPrompt(TaskStatistics stats, ProductivityTrends trends, List<Task> tasks) {
+    private String buildAnalyticsPrompt(TaskStatistics stats, ProductivityTrends trends, List<Task> tasks, String language) {
+        String languageName = getLanguageName(language);
+        
         return String.format("""
                 You are a productivity expert analyzing a user's task management data. Provide insights in JSON format.
+                
+                IMPORTANT: Respond in %s language. All text fields (summary, strengths, weaknesses, suggestions, productivityScore) must be in %s.
                 
                 User Statistics:
                 - Total Tasks: %d
@@ -313,17 +317,19 @@ public class AnalyticsServiceImpl implements AnalyticsService {
                 - Average Tasks Per Day: %.1f
                 - Tasks Completed Today: %d
                 
-                Analyze this data and provide:
+                Analyze this data and provide (all text in %s):
                 {
                   "summary": "Brief overall assessment (2-3 sentences)",
                   "strengths": ["strength1", "strength2", "strength3"],
                   "weaknesses": ["weakness1", "weakness2"],
                   "suggestions": ["actionable suggestion1", "actionable suggestion2", "actionable suggestion3"],
-                  "productivityScore": "Excellent/Good/Average/Needs Improvement"
+                  "productivityScore": "Excellent/Good/Average/Needs Improvement (or equivalent in %s)"
                 }
                 
                 Return ONLY valid JSON, no markdown.
                 """,
+                languageName,
+                languageName,
                 stats.getTotalTasks(),
                 stats.getCompletedTasks(),
                 stats.getCompletionRate(),
@@ -335,11 +341,13 @@ public class AnalyticsServiceImpl implements AnalyticsService {
                 trends.getMostProductiveDay(),
                 trends.getMostProductiveHour(),
                 trends.getAverageTasksPerDay(),
-                stats.getTasksCompletedToday()
+                stats.getTasksCompletedToday(),
+                languageName,
+                languageName
         );
     }
     
-    private AIInsights parseAIInsightsResponse(String aiResponse, double completionRate) {
+    private AIInsights parseAIInsightsResponse(String aiResponse, double completionRate, String language) {
         try {
             JsonNode root = objectMapper.readTree(aiResponse.trim()
                     .replaceFirst("^```json\\s*", "")
@@ -374,18 +382,56 @@ public class AnalyticsServiceImpl implements AnalyticsService {
             
         } catch (Exception e) {
             log.error("Error parsing AI insights: {}", e.getMessage());
-            return getDefaultInsights();
+            return getDefaultInsights(language);
         }
     }
     
-    private AIInsights getDefaultInsights() {
+    private AIInsights getDefaultInsights(String language) {
+        boolean isVi = isVietnamese(language);
+        
         return AIInsights.builder()
-                .summary("Keep tracking your tasks to get personalized insights.")
-                .strengths(List.of("You're using the task management system"))
-                .weaknesses(List.of("More data needed for detailed analysis"))
-                .suggestions(List.of("Continue adding tasks", "Mark tasks as completed", "Set priorities for important tasks"))
-                .productivityScore("Average")
+                .summary(isVi 
+                    ? "Tiếp tục theo dõi công việc của bạn để nhận thông tin chi tiết cá nhân hóa."
+                    : "Keep tracking your tasks to get personalized insights.")
+                .strengths(List.of(isVi 
+                    ? "Bạn đang sử dụng hệ thống quản lý công việc"
+                    : "You're using the task management system"))
+                .weaknesses(List.of(isVi
+                    ? "Cần thêm dữ liệu để phân tích chi tiết"
+                    : "More data needed for detailed analysis"))
+                .suggestions(List.of(
+                    isVi ? "Tiếp tục thêm công việc" : "Continue adding tasks",
+                    isVi ? "Đánh dấu công việc đã hoàn thành" : "Mark tasks as completed",
+                    isVi ? "Đặt mức độ ưu tiên cho công việc quan trọng" : "Set priorities for important tasks"
+                ))
+                .productivityScore(isVi ? "Trung bình" : "Average")
                 .scorePercentage(50.0)
                 .build();
+    }
+    
+    /**
+     * Convert language code to full language name
+     */
+    private String getLanguageName(String language) {
+        if (language == null || language.trim().isEmpty()) {
+            return "English";
+        }
+        
+        return switch (language.toLowerCase()) {
+            case "vi", "vie", "vietnamese" -> "Vietnamese";
+            case "en", "eng", "english" -> "English";
+            default -> "English";
+        };
+    }
+    
+    /**
+     * Check if language is Vietnamese
+     */
+    private boolean isVietnamese(String language) {
+        if (language == null || language.trim().isEmpty()) {
+            return false;
+        }
+        String lang = language.toLowerCase();
+        return lang.equals("vi") || lang.equals("vie") || lang.equals("vietnamese");
     }
 }

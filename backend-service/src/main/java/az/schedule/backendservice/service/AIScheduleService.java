@@ -9,7 +9,8 @@ public interface AIScheduleService {
      * @param accountId The account ID to generate suggestions for
      * @param year The year
      * @param month The month (1-12)
+     * @param language User's preferred language (e.g., "en", "vi")
      * @return Schedule suggestions with analysis
      */
-    ScheduleSuggestionResponse generateScheduleSuggestions(Long accountId, int year, int month);
+    ScheduleSuggestionResponse generateScheduleSuggestions(Long accountId, int year, int month, String language);
 }

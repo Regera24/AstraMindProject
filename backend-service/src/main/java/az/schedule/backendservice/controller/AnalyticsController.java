@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/analytics")
 public class AnalyticsController {
     private final AnalyticsService analyticsService;
+    private final az.schedule.backendservice.utils.MessageUtils messageUtils;
     
     @Operation(summary = "Get task analytics", description = "Get task analytics with stats, charts, and heatmap (fast, without AI insights)")
     @GetMapping
@@ -25,19 +26,20 @@ public class AnalyticsController {
         TaskAnalyticsResponse analytics = analyticsService.getTaskAnalytics(accountId);
         return ApiResponse.<TaskAnalyticsResponse>builder()
                 .code(HttpStatus.OK.value())
-                .message("Analytics retrieved successfully")
+                .message(messageUtils.getMessage("success.analytics.get"))
                 .data(analytics)
                 .build();
     }
     
     @Operation(summary = "Get AI insights", description = "Get AI-powered productivity insights and suggestions (slower, separate from main analytics)")
     @GetMapping("/ai-insights")
-    public ApiResponse<AIInsights> getAIInsights() {
+    public ApiResponse<AIInsights> getAIInsights(
+            @RequestHeader(value = "Accept-Language", defaultValue = "en") String language) {
         Long accountId = SecurityUtils.getCurrentAccountId();
-        AIInsights insights = analyticsService.getAIInsights(accountId);
+        AIInsights insights = analyticsService.getAIInsights(accountId, language);
         return ApiResponse.<AIInsights>builder()
                 .code(HttpStatus.OK.value())
-                .message("AI insights generated successfully")
+                .message(messageUtils.getMessage("success.analytics.ai.insights"))
                 .data(insights)
                 .build();
     }

@@ -1,5 +1,6 @@
 import CONFIG from './config.js';
 import api from './utils/api.js';
+import { initiateGoogleOAuth } from './utils/oauth.js';
 
 // DOM Elements
 const loginScreen = document.getElementById('login-screen');
@@ -10,6 +11,11 @@ const loginError = document.getElementById('login-error');
 const logoutBtn = document.getElementById('logout-btn');
 const userNameEl = document.getElementById('user-name');
 const streakCount = document.getElementById('streak-count');
+
+// Login screen elements
+const togglePasswordBtn = document.getElementById('toggle-password');
+const passwordInput = document.getElementById('password');
+const googleLoginBtn = document.getElementById('google-login-btn');
 
 // Tabs
 const tabs = document.querySelectorAll('.tab');
@@ -95,6 +101,81 @@ loginForm.addEventListener('submit', async (e) => {
     loginBtn.querySelector('.spinner').classList.add('hidden');
   }
 });
+
+// Toggle password visibility
+if (togglePasswordBtn) {
+  togglePasswordBtn.addEventListener('click', () => {
+    const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+    passwordInput.setAttribute('type', type);
+    
+    const icon = togglePasswordBtn.querySelector('i');
+    if (type === 'password') {
+      icon.classList.remove('fa-eye-slash');
+      icon.classList.add('fa-eye');
+    } else {
+      icon.classList.remove('fa-eye');
+      icon.classList.add('fa-eye-slash');
+    }
+  });
+}
+
+// Google login
+if (googleLoginBtn) {
+  googleLoginBtn.addEventListener('click', async () => {
+    // Save original HTML outside try block
+    const originalHTML = googleLoginBtn.innerHTML;
+    
+    try {
+      // Disable button and show loading
+      googleLoginBtn.disabled = true;
+      googleLoginBtn.innerHTML = `
+        <svg class="animate-spin" style="width: 18px; height: 18px; display: inline-block;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <span style="margin-left: 8px;">Signing in...</span>
+      `;
+      
+      console.log('[Google Login] Starting OAuth flow...');
+      
+      // Initiate OAuth flow
+      const code = await initiateGoogleOAuth();
+      console.log('[Google Login] Authorization code received:', code ? 'YES (length: ' + code.length + ')' : 'NO');
+      console.log('[Google Login] Code preview:', code ? code.substring(0, 20) + '...' : 'null');
+      
+      // Send code to backend
+      console.log('[Google Login] Sending code to backend...');
+      const response = await api.oauthAuthenticate(code);
+      console.log('[Google Login] Backend response:', response);
+      
+      // Get user data
+      console.log('[Google Login] Fetching user data...');
+      const userData = await api.getCurrentUser();
+      console.log('[Google Login] User data received:', userData);
+      currentUser = userData.data;
+      
+      // Show main screen
+      console.log('[Google Login] Login successful!');
+      showMainScreen();
+      
+    } catch (error) {
+      console.error('[Google Login] Error occurred:', error);
+      console.error('[Google Login] Error details:', {
+        message: error.message,
+        stack: error.stack,
+        response: error.response
+      });
+      
+      // Show error message
+      loginError.textContent = error.message || 'Google sign-in failed. Please try again.';
+      loginError.classList.remove('hidden');
+      
+      // Reset button
+      googleLoginBtn.disabled = false;
+      googleLoginBtn.innerHTML = originalHTML;
+    }
+  });
+}
 
 logoutBtn.addEventListener('click', async () => {
   await api.logout();
